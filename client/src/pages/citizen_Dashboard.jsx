@@ -82,6 +82,12 @@ const Dashboard = () => {
               <p>View your household details</p>
             </Link>
           </div>
+          <div className="card">
+            <Link to="/citizen/employees">
+              <h3>Panchayat Employees</h3>
+              <p>View Panchayat Employees</p>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

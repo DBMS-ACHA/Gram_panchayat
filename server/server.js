@@ -58,6 +58,27 @@ app.get('/citizen/vaccinations', async (req, res) => {
   }
 });
 
+app.get('/citizen/employees', async (req, res) => {
+  const { filter, sort } = req.query;
+  let query = 'SELECT * FROM panchayat_employees, citizens WHERE panchayat_employees.citizen_id = citizens.citizen_id';
+  
+  if (filter) {
+    query += ` WHERE name ILIKE '%${filter}%'`;
+  }
+  
+  if (sort) {
+    query += ` ORDER BY ${sort}`;
+  }
+
+  try {
+    const employeeData = await Pool.query(query);
+    res.json(employeeData.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
