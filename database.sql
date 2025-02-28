@@ -34,7 +34,7 @@ CREATE TABLE users (
     citizen_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     refresh_token TEXT,
-    access_token TEXT,
+    last_login TIMESTAMP,
     FOREIGN KEY (citizen_id) REFERENCES citizens(citizen_id)
 );
 

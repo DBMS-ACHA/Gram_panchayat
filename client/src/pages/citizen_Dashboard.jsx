@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Dashboard.css'; // You'll need to create this CSS file with the styles from the HTML
+import axios from 'axios';
 
 // This will be your main dashboard component
 const Dashboard = () => {
@@ -10,28 +11,63 @@ const Dashboard = () => {
 
   // You would fetch user data on component mount
   useEffect(() => {
-    // This is where you'd make an API call to get user data
-    // Example:
-    // const fetchUserData = async () => {
-    //   try {
-    //     const response = await api.get('/citizen/profile');
-    //     setCitizenName(response.data.name);
-    //     setVillage(response.data.village);
-    //   } catch (error) {
-    //     console.error('Error fetching user data:', error);
-    //   }
-    // };
-    // fetchUserData();
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/');
+          return
+        }
+        const response = await axios.get('http://localhost:3535/citizen/profile', {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.data && response.data.name) {
+          setCitizenName(response.data.name);
+        }
+      
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        // If there's an authentication error, redirect to login
+        if (error.response && error.response.status === 401) {
+          navigate('/');
+        }
+      }
+    };
 
-    // For now, using placeholder data
-    setCitizenName('John Doe');
-  }, []);
+    fetchUserData();
+  }, [navigate]);
 
-  const handleLogout = () => {
-    // Implement logout logic here
-    // Clear local storage, cookies, etc.
-    localStorage.removeItem('token');
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint to clear the server-side cookie
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/');
+        return;
+      }
+      await axios.post('http://localhost:3535/api/auth/logout', {}, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      // Clear any client-side storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('username');
+      
+      // Redirect to login page
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Redirect to login anyway
+      navigate('/login');
+    }
   };
 
   return (

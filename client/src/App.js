@@ -8,19 +8,22 @@ import Vaccinations from './pages/Vaccinations';
 import Assets from './pages/Assets';
 import CensusData from './pages/CensusData';
 import LandRecords from './pages/LandRecords';
+import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/citizen/dashboard" element={<Dashboard />} />
-        <Route path="/citizen/household" element={<HouseholdInfo />} />
-        <Route path="/citizen/employees" element={<PanchayatEmployees />} />
-        <Route path="/citizen/vaccinations" element={<Vaccinations />} />
-        <Route path="/citizen/assets" element={<Assets />} />
-        <Route path="/citizen/census" element={<CensusData />} />
-        <Route path="/citizen/land-records" element={<LandRecords />} />
+        <Route path="/citizen/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/citizen/household" element={<ProtectedRoute><HouseholdInfo /></ProtectedRoute>} />
+        <Route path="/citizen/employees" element={<ProtectedRoute><PanchayatEmployees /></ProtectedRoute>} />
+        <Route path="/citizen/vaccinations" element={<ProtectedRoute><Vaccinations /></ProtectedRoute>} />
+        <Route path="/citizen/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+        <Route path="/citizen/census" element={<ProtectedRoute><CensusData /></ProtectedRoute>} />
+        <Route path="/citizen/land-records" element={<ProtectedRoute><LandRecords /></ProtectedRoute>} />
+        <Route path="/citizen/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
