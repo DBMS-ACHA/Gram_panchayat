@@ -75,7 +75,7 @@ const PanchayatEmployees = () => {
             <tr key={index}>
               <td>{item.employee_id}</td>
               <td>{item.name}</td>
-              <td>{item.roll}</td>
+              <td>{item.role}</td>
             </tr>
           ))}
         </tbody>
