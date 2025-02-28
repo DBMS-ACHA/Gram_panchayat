@@ -36,6 +36,19 @@ app.get('/citizen/household-info', async (req, res) => {
   }
 });
 
+// Add the new vaccinations endpoint
+app.get('/citizen/vaccinations', async (req, res) => {
+  try {
+    const vaccinationData = await Pool.query(
+      'SELECT * FROM vaccinations'
+    );
+    res.json(vaccinationData.rows);
+  } catch (err) {
+    console.error('Error fetching vaccination records:', err.message);
+    res.status(500).json({ error: 'Failed to fetch vaccination records' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

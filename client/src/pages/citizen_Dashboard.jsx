@@ -71,7 +71,7 @@ const Dashboard = () => {
             </Link>
           </div>
           <div className="card">
-            <Link to="/citizen/vaccinations">
+            <Link to="/vaccinations">
               <h3>Vaccination Records</h3>
               <p>View your vaccination history</p>
             </Link>
