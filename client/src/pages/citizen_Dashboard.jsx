@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/Dashboard.css'; // You'll need to create this CSS file with the styles from the HTML
 
 // This will be your main dashboard component
@@ -33,7 +34,7 @@ const Dashboard = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
-  
+
   return (
     <div className="dashboard">
       <div className="sidebar">

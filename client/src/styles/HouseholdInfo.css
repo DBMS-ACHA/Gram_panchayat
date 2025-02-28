@@ -1,0 +1,19 @@
+.household-info {
+    padding: 20px;
+}
+
+.household-info table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.household-info th,
+.household-info td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.household-info th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
