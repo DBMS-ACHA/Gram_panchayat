@@ -25,14 +25,23 @@ app.get('/', (req, res) => {
 });
 
 app.get('/citizen/household-info', async (req, res) => {
-  // get the data from the database from household table
-  try{
-    const householdData = await Pool.query(
-      'SELECT * FROM households'
-    );
+  const { filter, sort } = req.query;
+  let query = 'SELECT * FROM households';
+  
+  if (filter) {
+    query += ` WHERE address ILIKE '%${filter}%' OR income::text ILIKE '%${filter}%'`;
+  }
+  
+  if (sort) {
+    query += ` ORDER BY ${sort}`;
+  }
+
+  try {
+    const householdData = await Pool.query(query);
     res.json(householdData.rows);
-  }catch(err){
+  } catch (err) {
     console.error(err.message);
+    res.status(500).send('Server error');
   }
 });
 
