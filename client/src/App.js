@@ -5,6 +5,9 @@ import Dashboard from './pages/citizen_Dashboard';
 import HouseholdInfo from './pages/HouseholdInfo';
 import PanchayatEmployees from './pages/PanchayatEmployees';
 import Vaccinations from './pages/Vaccinations';
+import Assets from './pages/Assets';
+import CensusData from './pages/CensusData';
+import LandRecords from './pages/LandRecords';
 
 function App() {
   return (
@@ -15,6 +18,9 @@ function App() {
         <Route path="/citizen/household" element={<HouseholdInfo />} />
         <Route path="/citizen/employees" element={<PanchayatEmployees />} />
         <Route path="/citizen/vaccinations" element={<Vaccinations />} />
+        <Route path="/citizen/assets" element={<Assets />} />
+        <Route path="/citizen/census" element={<CensusData />} />
+        <Route path="/citizen/land-records" element={<LandRecords />} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>

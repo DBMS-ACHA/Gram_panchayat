@@ -1,0 +1,87 @@
+.census-info {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.census-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-link {
+    padding: 8px 16px;
+    background: #2c3e50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.back-link:hover {
+    background: #34495e;
+}
+
+.filter-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-select, 
+.filter-input {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.census-table-container {
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.census-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.census-table th,
+.census-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.census-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.error-message {
+    color: #e74c3c;
+}
+
+.apply-button {
+    padding: 8px 16px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.apply-button:hover {
+    background: #34495e;
+}

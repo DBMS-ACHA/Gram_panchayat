@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import '../styles/Dashboard.css'; // You'll need to create this CSS file with the styles from the HTML
 
 // This will be your main dashboard component
@@ -8,7 +7,7 @@ const Dashboard = () => {
   const [citizenName, setCitizenName] = useState('');
   const [village, setVillage] = useState('Phulera');
   const navigate = useNavigate();
-  
+
   // You would fetch user data on component mount
   useEffect(() => {
     // This is where you'd make an API call to get user data
@@ -23,11 +22,11 @@ const Dashboard = () => {
     //   }
     // };
     // fetchUserData();
-    
+
     // For now, using placeholder data
     setCitizenName('John Doe');
   }, []);
-  
+
   const handleLogout = () => {
     // Implement logout logic here
     // Clear local storage, cookies, etc.
@@ -44,11 +43,7 @@ const Dashboard = () => {
         </div>
         <nav>
           <Link to="/citizen/profile" className="menu-item">My Profile</Link>
-          <Link to="/citizen/employees" className="menu-item">Panchayat Committee</Link>
           <Link to="/citizen/schemes" className="menu-item">Welfare Schemes</Link>
-          <Link to="/citizen/assets" className="menu-item">Village Assets</Link>
-          <Link to="/citizen/land-records" className="menu-item">Land Records</Link>
-          <Link to="/citizen/census" className="menu-item">Census Data</Link>
           <button onClick={handleLogout} className="menu-item logout-button">Logout</button>
         </nav>
       </div>
@@ -86,6 +81,24 @@ const Dashboard = () => {
             <Link to="/citizen/employees">
               <h3>Panchayat Employees</h3>
               <p>View Panchayat Employees</p>
+            </Link>
+          </div>
+          <div className='card'>
+            <Link to="/citizen/assets">
+              <h3>Assets</h3>
+              <p>Assets owned by panchayat</p>
+            </Link>
+          </div>
+          <div className='card'>
+            <Link to="/citizen/census">
+              <h3>Census Data</h3>
+              <p>View census data</p>
+            </Link>
+          </div>
+          <div className='card'>
+            <Link to="/citizen/land-records">
+              <h3>Land Records</h3>
+              <p>View land records</p>
             </Link>
           </div>
         </div>
