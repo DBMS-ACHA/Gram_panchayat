@@ -85,6 +85,45 @@ app.get('/citizen/employees', async (req, res) => {
   }
 });
 
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password, role } = req.body;
+  
+  if (!username || !password || !role) {
+    return res.status(400).json({ message: 'Please provide username, password and role' });
+  }
+  
+  try {
+    // Query for the user with matching credentials and role
+    const userQuery = 'SELECT * FROM users WHERE username = $1 AND role = $2';
+    const userResult = await Pool.query(userQuery, [username, role]);
+    
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid username or role' });
+    }
+    
+    const user = userResult.rows[0];
+    
+    // In a real app, you would compare hashed passwords
+    // This is a simplified example
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'Invalid password' });
+    }
+    
+    // Generate a simple token (in production, use JWT)
+    const token = Buffer.from(`${username}-${role}-${Date.now()}`).toString('base64');
+    
+    res.json({ 
+      message: 'Login successful',
+      token,
+      role,
+      username
+    });
+  } catch (err) {
+    console.error('Login error:', err.message);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

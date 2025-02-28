@@ -30,29 +30,35 @@ const Login = () => {
         }
         
         try {
-            const response = await fetch('/login', {
+            const response = await fetch('http://localhost:3535/api/auth/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password, role })
+                body: JSON.stringify({ username, password, role }),
             });
-            
-            if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('Invalid username or password.');
-                }
-                throw new Error('An error occurred during login.');
-            }
-            
+
             const data = await response.json();
-            
-            // Store the tokens and role
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('role', data.role);
-            
-            // Redirect to dashboard
-            navigate(data.redirectUrl);
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+
+            // Store the token in localStorage
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('role', role);
+            localStorage.setItem('username', username);
+
+            // Redirect based on role
+            if (role === 'citizen') {
+                navigate('/citizen/dashboard');
+            } else if (role === 'admin') {
+                navigate('/admin/dashboard');
+            } else if (role === 'panchayat') {
+                navigate('/panchayat/dashboard');
+            } else if (role === 'monitor') {
+                navigate('/monitor/dashboard');
+            }
             
         } catch (err) {
             showError(err.message);
