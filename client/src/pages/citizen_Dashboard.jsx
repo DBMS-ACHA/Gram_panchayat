@@ -32,7 +32,7 @@ const Dashboard = () => {
     // Implement logout logic here
     // Clear local storage, cookies, etc.
     localStorage.removeItem('token');
-    navigate('/login');
+    navigate('/');
   };
 
   return (
