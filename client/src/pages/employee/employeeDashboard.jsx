@@ -91,7 +91,7 @@ const EmployeeDashboard = () => {
                 </div>
                 <div className="card-container">
                     <div className="card">
-                        <Link to="/employee/citizens">
+                        <Link to="/employee/village">
                             <h3>Citizen Registry</h3>
                             <p>Manage citizen records and profiles</p>
                         </Link>

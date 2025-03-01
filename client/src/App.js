@@ -24,6 +24,8 @@ import EmployeeDashboard from './pages/employee/employeeDashboard';
 import EmployeeVaccinations from './pages/employee/employeeVaccinations';
 import EmployeeLandRecords from './pages/employee/employeeLandRecords';
 import EmployeeCensus from './pages/employee/employeeCensus';
+import EmployeeCitizen from './pages/employee/employeeCitizens';
+import EmployeeCitizenProfile from './pages/employee/employeeCitizenProfile';
 
 function App() {
   return (
@@ -52,6 +54,9 @@ function App() {
         <Route path="/employee/vaccinations" element={<ProtectedRoute><EmployeeVaccinations /></ProtectedRoute>} />
         <Route path="/employee/land-records" element={<ProtectedRoute><EmployeeLandRecords /></ProtectedRoute>} />
         <Route path="/employee/census" element={<ProtectedRoute><EmployeeCensus /></ProtectedRoute>} />
+        <Route path="/employee/village" element={<ProtectedRoute><EmployeeCitizen /></ProtectedRoute>} />
+        <Route path="/employee/citizens/:id" element={<ProtectedRoute><EmployeeCitizenProfile /></ProtectedRoute>} />
+
         {/* Add other routes as needed */}
       </Routes>
     </Router>

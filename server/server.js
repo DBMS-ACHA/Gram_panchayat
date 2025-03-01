@@ -479,7 +479,7 @@ app.get('/monitor/asset-tracking', verifyToken, async (req, res) => {
 app.get('/monitor/citizen/:id', verifyToken, async (req, res) => {
   try {
     // Verify the user is a monitor
-    if (req.user.role !== 'monitor') {
+    if (req.user.role !== 'monitor' && req.user.role !== 'employee') {
       return res.status(403).json({ error: 'Access denied. Only monitors can view this resource.' });
     }
     
