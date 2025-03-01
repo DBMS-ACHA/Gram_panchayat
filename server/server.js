@@ -27,17 +27,17 @@ app.use(cookieParser());
 const verifyToken = (req, res, next) => {
   // First check authorization header
   const bearerHeader = req.headers['authorization'];
-  
+
   // Then check cookies
   const cookieToken = req.cookies.token;
-  
+
   // Use either the bearer token or cookie token
   const token = bearerHeader ? bearerHeader.split(' ')[1] : cookieToken;
-  
+
   if (!token) {
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
-  
+
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
@@ -140,18 +140,14 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ "username": username,"role": role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ "username": username, "role": role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     //update in the table for the last login and the refresh token
     const updateQuery = 'UPDATE users SET last_login = NOW(), refresh_token = $1 WHERE username = $2';
     await Pool.query(updateQuery, [token, username]);
 
     res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
-    console.log('Login successful');
-    console.log('Token:', token);
-    console.log('Role:', role);
-    console.log('Username:', username);
-    console.log('cookie:', res.cookie);
+
     res.json({
       message: 'Login successful',
       token,
@@ -193,7 +189,7 @@ app.get('/citizen/census', async (req, res) => {
     query += ` WHERE event_type ILIKE '%${filter}%'`;
   }
 
-  if(sort) {
+  if (sort) {
     query += ` ORDER BY ${sort}`;
   }
 
@@ -235,7 +231,7 @@ app.get('/citizen/profile', verifyToken, async (req, res) => {
       `SELECT citizen_id from users WHERE username = $1`,
       [username]
     );
-    if(citizenData.rows.length === 0) {
+    if (citizenData.rows.length === 0) {
       return res.status(404).json({ error: 'Citizen not found' });
     }
 
@@ -329,13 +325,13 @@ app.get('/citizen/profile', verifyToken, async (req, res) => {
       LEFT JOIN users u ON c.citizen_id = u.citizen_id
       WHERE c.citizen_id = $1
     `;
-    
+
     const result = await Pool.query(query, [citizenId]);
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Citizen not found' });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching citizen profile:', error.message);
@@ -343,10 +339,132 @@ app.get('/citizen/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Get all welfare schemes
+app.get('/citizen/schemes', verifyToken, async (req, res) => {
+  try {
+    const schemesQuery = `
+      SELECT 
+        scheme_id, 
+        name, 
+        description, 
+        status, 
+        expiry_date 
+      FROM welfare_schemes
+      ORDER BY status DESC, expiry_date DESC
+    `;
+
+    const schemesData = await Pool.query(schemesQuery);
+    res.json(schemesData.rows);
+  } catch (err) {
+    console.error('Error fetching welfare schemes:', err.message);
+    res.status(500).json({ error: 'Failed to fetch welfare schemes' });
+  }
+});
+
+// Apply for a scheme
+app.post('/citizen/schemes/apply', verifyToken, async (req, res) => {
+  const { schemeId } = req.body;
+  const username = req.user.username;
+
+  const citizenQuery = 'SELECT citizen_id FROM users WHERE username = $1';
+  const citizenResult = await Pool.query(citizenQuery, [username]);
+
+  if (citizenResult.rows.length === 0) {
+    return res.status(404).json({ message: 'Citizen not found' });
+  }
+
+  const citizenId = citizenResult.rows[0].citizen_id;
+
+  if (!schemeId) {
+    return res.status(400).json({ message: 'Scheme ID is required' });
+  }
+
+  try {
+    // Check if scheme exists and is active
+    const schemeQuery = `
+      SELECT * FROM welfare_schemes 
+      WHERE scheme_id = $1 AND status = true 
+      AND (expiry_date IS NULL OR expiry_date > NOW())
+    `;
+    const schemeResult = await Pool.query(schemeQuery, [schemeId]);
+
+    if (schemeResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Scheme not found or not active' });
+    }
+
+    // Check if user has already applied for this scheme
+    const existingApplicationQuery = `
+      SELECT * FROM scheme_applications 
+      WHERE citizen_id = $1 AND scheme_id = $2
+    `;
+    const existingApplication = await Pool.query(existingApplicationQuery, [citizenId, schemeId]);
+
+    if (existingApplication.rows.length > 0) {
+      return res.status(400).json({ message: 'You have already applied for this scheme' });
+    }
+
+    // Submit the application
+    const insertQuery = `
+      INSERT INTO scheme_applications (citizen_id, scheme_id, application_date, status) 
+      VALUES ($1, $2, NOW(), 'pending') 
+    `;
+    const newApplication = await Pool.query(insertQuery, [citizenId, schemeId]);
+
+    res.status(201).json({
+      message: 'Application submitted successfully'
+    });
+  } catch (err) {
+    console.error('Error applying for scheme:', err.message);
+    res.status(500).json({ message: 'Server error while submitting application' });
+  }
+});
+
+// Get citizen's scheme applications
+app.get('/citizen/applications', verifyToken, async (req, res) => {
+  try {
+
+    const username = req.user.username;
+
+    const citizenQuery = 'SELECT citizen_id FROM users WHERE username = $1';
+    const citizenResult = await Pool.query(citizenQuery, [username]);
+  
+    if (citizenResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Citizen not found' });
+    }
+  
+    const citizenId = citizenResult.rows[0].citizen_id;
+
+    if (!citizenId) {
+      return res.status(400).json({ error: 'Citizen ID not found in token' });
+    }
+
+    const applicationsQuery = `
+      SELECT 
+        sa.citizen_id,
+        sa.scheme_id,
+        sa.application_date,
+        sa.status,
+        ws.name AS scheme_name,
+        ws.description,
+        ws.expiry_date
+      FROM scheme_applications sa
+      JOIN welfare_schemes ws ON sa.scheme_id = ws.scheme_id
+      WHERE sa.citizen_id = $1
+      ORDER BY sa.application_date DESC
+    `;
+
+    const applications = await Pool.query(applicationsQuery, [citizenId]);
+    res.json(applications.rows);
+  } catch (err) {
+    console.error('Error fetching citizen applications:', err.message);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
 // Authentication verification endpoint
 app.get('/api/auth/verify', verifyToken, (req, res) => {
   // If verifyToken middleware passes, the user is authenticated
-  res.status(200).json({ 
+  res.status(200).json({
     authenticated: true,
     user: {
       username: req.user.username,

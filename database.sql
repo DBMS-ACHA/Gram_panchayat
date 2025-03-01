@@ -103,6 +103,8 @@ CREATE TABLE census_data (
 CREATE TABLE scheme_applications(
 	citizen_id INTEGER,
 	scheme_id INTEGER,
+	application_date TIMESTAMP,
+	STATUS TEXT,
 	PRIMARY KEY (citizen_id, scheme_id),
 	FOREIGN KEY (scheme_id) REFERENCES welfare_schemes(scheme_id),
 	FOREIGN KEY (citizen_id) REFERENCES citizens(citizen_id)
@@ -250,18 +252,3 @@ INSERT INTO census_data (household_id, citizen_id, event_type, event_date) VALUE
 (2, 5, 'Marriage', '2000-06-15'),
 (9, 17, 'Death', '2022-01-05'),
 (5, 13, 'Education Update', '2022-03-10');
-
--- Insert scheme applications
-INSERT INTO scheme_applications (citizen_id, scheme_id) VALUES
-(1, 1),
-(2, 5),
-(3, 2),
-(4, 1),
-(5, 1),
-(6, 2),
-(7, 4),
-(8, 3),
-(9, 6),
-(10, 6),
-(11, 4),
-(12, 5);

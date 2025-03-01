@@ -79,7 +79,6 @@ const Dashboard = () => {
         </div>
         <nav>
           <Link to="/citizen/profile" className="menu-item">My Profile</Link>
-          <Link to="/citizen/schemes" className="menu-item">Welfare Schemes</Link>
           <button onClick={handleLogout} className="menu-item logout-button">Logout</button>
         </nav>
       </div>
