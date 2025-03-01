@@ -29,39 +29,42 @@ import EmployeeCitizenProfile from './pages/employee/employeeCitizenProfile';
 import EmployeeSchemes from './pages/employee/employeeeSchemes';
 import SchemeDetailsPage from './pages/employee/employeeSchemeDetails';
 import EmployeeAssets from './pages/employee/employeeAssets';
+import RoleGuard from './components/RoleGuard';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/citizen/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/citizen/household" element={<ProtectedRoute><HouseholdInfo /></ProtectedRoute>} />
-        <Route path="/citizen/employees" element={<ProtectedRoute><PanchayatEmployees /></ProtectedRoute>} />
-        <Route path="/citizen/vaccinations" element={<ProtectedRoute><Vaccinations /></ProtectedRoute>} />
-        <Route path="/citizen/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-        <Route path="/citizen/census" element={<ProtectedRoute><CensusData /></ProtectedRoute>} />
-        <Route path="/citizen/land-records" element={<ProtectedRoute><LandRecords /></ProtectedRoute>} />
-        <Route path="/citizen/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/citizen/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
-        <Route path="/citizen/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />
-        <Route path="/monitor/dashboard" element={<ProtectedRoute><MonitorDashboard /></ProtectedRoute>} />
-        <Route path="/monitor/land" element={<ProtectedRoute><LandRecordsMonitor /></ProtectedRoute>} />
-        <Route path="/monitor/village" element={<ProtectedRoute><VillageStatisticsMonitor /></ProtectedRoute>} />
-        <Route path="/monitor/asset-tracking" element={<ProtectedRoute><AssetsMonitor /></ProtectedRoute>} />
-        <Route path="/monitor/citizen/:id" element={<ProtectedRoute><CitizenProfileMonitor /></ProtectedRoute>} />
-        <Route path="/monitor/census-reporting" element={<ProtectedRoute><CensusReporting /></ProtectedRoute>} />
-        <Route path="/monitor/vaccination-records" element={<ProtectedRoute><VaccinationMonitor /></ProtectedRoute>} />
 
-        <Route path="/employee/dashboard" element={<ProtectedRoute><EmployeeDashboard /></ProtectedRoute>} />
-        <Route path="/employee/vaccinations" element={<ProtectedRoute><EmployeeVaccinations /></ProtectedRoute>} />
-        <Route path="/employee/land-records" element={<ProtectedRoute><EmployeeLandRecords /></ProtectedRoute>} />
-        <Route path="/employee/census" element={<ProtectedRoute><EmployeeCensus /></ProtectedRoute>} />
-        <Route path="/employee/village" element={<ProtectedRoute><EmployeeCitizen /></ProtectedRoute>} />
-        <Route path="/employee/citizens/:id" element={<ProtectedRoute><EmployeeCitizenProfile /></ProtectedRoute>} />
-        <Route path="/employee/welfare-schemes" element={<ProtectedRoute><EmployeeSchemes /></ProtectedRoute>} />
-        <Route path="/employee/schemes/:schemeId" element={<ProtectedRoute><SchemeDetailsPage /></ProtectedRoute>} />
-        <Route path="/employee/assets" element={<ProtectedRoute><EmployeeAssets /></ProtectedRoute>} />
+        <Route path="/citizen/dashboard" element={<RoleGuard requiredRole="citizen"><Dashboard /></RoleGuard>} />
+        <Route path="/citizen/household" element={<RoleGuard requiredRole="citizen"><HouseholdInfo /></RoleGuard>} />
+        <Route path="/citizen/employees" element={<RoleGuard requiredRole="citizen"><PanchayatEmployees /></RoleGuard>} />
+        <Route path="/citizen/vaccinations" element={<RoleGuard requiredRole="citizen"><Vaccinations /></RoleGuard>} />
+        <Route path="/citizen/assets" element={<RoleGuard requiredRole="citizen"><Assets /></RoleGuard>} />
+        <Route path="/citizen/census" element={<RoleGuard requiredRole="citizen"><CensusData /></RoleGuard>} />
+        <Route path="/citizen/land-records" element={<RoleGuard requiredRole="citizen"><LandRecords /></RoleGuard>} />
+        <Route path="/citizen/profile" element={<RoleGuard requiredRole="citizen"><Profile /></RoleGuard>} />
+        <Route path="/citizen/schemes" element={<RoleGuard requiredRole="citizen"><Schemes /></RoleGuard>} />
+        <Route path="/citizen/applications" element={<RoleGuard requiredRole="citizen"><Applications /></RoleGuard>} />
+
+        <Route path="/monitor/dashboard" element={<RoleGuard requiredRole="monitor"><MonitorDashboard /></RoleGuard>} />
+        <Route path="/monitor/land" element={<RoleGuard requiredRole="monitor"><LandRecordsMonitor /></RoleGuard>} />
+        <Route path="/monitor/village" element={<RoleGuard requiredRole="monitor"><VillageStatisticsMonitor /></RoleGuard>} />
+        <Route path="/monitor/asset-tracking" element={<RoleGuard requiredRole="monitor"><AssetsMonitor /></RoleGuard>} />
+        <Route path="/monitor/citizen/:id" element={<RoleGuard requiredRole="monitor"><CitizenProfileMonitor /></RoleGuard>} />
+        <Route path="/monitor/census-reporting" element={<RoleGuard requiredRole="monitor"><CensusReporting /></RoleGuard>} />
+        <Route path="/monitor/vaccination-records" element={<RoleGuard requiredRole="monitor"><VaccinationMonitor /></RoleGuard>} />
+
+        <Route path="/employee/dashboard" element={<RoleGuard requiredRole="employee"><EmployeeDashboard /></RoleGuard>} />
+        <Route path="/employee/vaccinations" element={<RoleGuard requiredRole="employee"><EmployeeVaccinations /></RoleGuard>} />
+        <Route path="/employee/land-records" element={<RoleGuard requiredRole="employee"><EmployeeLandRecords /></RoleGuard>} />
+        <Route path="/employee/census" element={<RoleGuard requiredRole="employee"><EmployeeCensus /></RoleGuard>} />
+        <Route path="/employee/village" element={<RoleGuard requiredRole="employee"><EmployeeCitizen /></RoleGuard>} />
+        <Route path="/employee/citizens/:id" element={<RoleGuard requiredRole="employee"><EmployeeCitizenProfile /></RoleGuard>} />
+        <Route path="/employee/welfare-schemes" element={<RoleGuard requiredRole="employee"><EmployeeSchemes /></RoleGuard>} />
+        <Route path="/employee/schemes/:schemeId" element={<RoleGuard requiredRole="employee"><SchemeDetailsPage /></RoleGuard>} />
+        <Route path="/employee/assets" element={<RoleGuard requiredRole="employee"><EmployeeAssets /></RoleGuard>} />
 
         {/* Add other routes as needed */}
       </Routes>

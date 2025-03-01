@@ -408,6 +408,18 @@ app.get('/api/auth/verify', verifyToken, (req, res) => {
   });
 });
 
+// Add this route to your existing auth.js file
+
+// Verify user role
+app.get('/auth/verify-role', verifyToken, (req, res) => {
+  try {
+    res.json({ role: req.user.role });
+  } catch (err) {
+    console.error('Error verifying role:', err.message);
+    res.status(401).json({ error: 'Authentication failed' });
+  }
+});
+
 app.post('/api/auth/logout', verifyToken, (req, res) => {
   // Clear the refresh token from the database
   const username = req.user.username;
