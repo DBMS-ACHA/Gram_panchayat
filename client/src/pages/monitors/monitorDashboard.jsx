@@ -65,7 +65,7 @@ const MonitorDashboard = () => {
             navigate('/');
         } catch (error) {
             console.error('Logout failed:', error);
-            navigate('/login');
+            navigate('/');
         }
     };
 
