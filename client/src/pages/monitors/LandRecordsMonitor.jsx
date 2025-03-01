@@ -62,16 +62,25 @@ const LandRecordsMonitor = () => {
 
   const filteredAndSortedRecords = landRecords
     .filter(record => 
-      record.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      record.crop_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (record.owner_name && record.owner_name.toLowerCase().includes(searchTerm.toLowerCase())) || 
+      (record.crop_type && record.crop_type.toLowerCase().includes(searchTerm.toLowerCase())) ||
       String(record.land_id).includes(searchTerm) ||
       String(record.household_id).includes(searchTerm)
     )
     .sort((a, b) => {
-      if (a[sortField] < b[sortField]) {
+      let valA = a[sortField];
+      let valB = b[sortField];
+      
+      // Handle numeric fields
+      if (['land_id', 'household_id', 'area_acres'].includes(sortField)) {
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+      }
+      
+      if (valA < valB) {
         return sortDirection === 'asc' ? -1 : 1;
       }
-      if (a[sortField] > b[sortField]) {
+      if (valA > valB) {
         return sortDirection === 'asc' ? 1 : -1;
       }
       return 0;
@@ -98,7 +107,7 @@ const LandRecordsMonitor = () => {
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading land records...</p>
+          <p>Loading land records information...</p>
         </div>
       ) : error ? (
         <div className="error-message">{error}</div>
@@ -109,38 +118,78 @@ const LandRecordsMonitor = () => {
               {searchTerm ? 'No matching records found' : 'No land records available'}
             </div>
           ) : (
-            <table className="land-records-table">
-              <thead>
-                <tr>
-                  <th onClick={() => handleSort('land_id')}>
-                    Land ID {getSortIcon('land_id')}
-                  </th>
-                  <th onClick={() => handleSort('owner_name')}>
-                    Owner Name {getSortIcon('owner_name')}
-                  </th>
-                  <th onClick={() => handleSort('household_id')}>
-                    Household ID {getSortIcon('household_id')}
-                  </th>
-                  <th onClick={() => handleSort('area_acres')}>
-                    Area (acres) {getSortIcon('area_acres')}
-                  </th>
-                  <th onClick={() => handleSort('crop_type')}>
-                    Crop Type {getSortIcon('crop_type')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedRecords.map((record) => (
-                  <tr key={record.land_id}>
-                    <td>{record.land_id}</td>
-                    <td>{record.owner_name}</td>
-                    <td>{record.household_id}</td>
-                    <td>{record.area_acres}</td>
-                    <td>{record.crop_type}</td>
+            <>
+              <div className="land-stats">
+                <div className="stat-card">
+                  <div className="stat-value">{landRecords.length}</div>
+                  <div className="stat-label">Total Land Records</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {Object.keys(landRecords.reduce((acc, record) => {
+                      if (record.crop_type) acc[record.crop_type] = true;
+                      return acc;
+                    }, {})).length}
+                  </div>
+                  <div className="stat-label">Crop Types</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {landRecords.reduce((sum, record) => sum + (Number(record.area_acres) || 0), 0).toFixed(2)}
+                  </div>
+                  <div className="stat-label">Total Acres</div>
+                </div>
+              </div>
+            
+              <table className="land-records-table">
+                <thead>
+                  <tr>
+                    <th onClick={() => handleSort('land_id')}>
+                      Land ID {getSortIcon('land_id')}
+                    </th>
+                    <th onClick={() => handleSort('owner_name')}>
+                      Owner Name {getSortIcon('owner_name')}
+                    </th>
+                    <th onClick={() => handleSort('household_id')}>
+                      Household ID {getSortIcon('household_id')}
+                    </th>
+                    <th onClick={() => handleSort('area_acres')}>
+                      Area (acres) {getSortIcon('area_acres')}
+                    </th>
+                    <th onClick={() => handleSort('crop_type')}>
+                      Crop Type {getSortIcon('crop_type')}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredAndSortedRecords.map((record) => (
+                    <tr key={record.land_id}>
+                      <td>{record.land_id}</td>
+                      <td>{record.owner_name || "Not specified"}</td>
+                      <td>{record.household_id || "Not specified"}</td>
+                      <td>{record.area_acres || "Not specified"}</td>
+                      <td>{record.crop_type || "Not specified"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              <div className="crop-distribution">
+                <h2>Crop Distribution</h2>
+                <div className="distribution-cards">
+                  {Object.entries(landRecords.reduce((acc, record) => {
+                    const cropType = record.crop_type || "Unknown";
+                    acc[cropType] = (acc[cropType] || 0) + 1;
+                    return acc;
+                  }, {})).map(([cropType, count]) => (
+                    <div className="distribution-card" key={cropType}>
+                      <div className="crop-type">{cropType}</div>
+                      <div className="crop-count">{count} lands</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
