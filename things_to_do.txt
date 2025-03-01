@@ -1,1 +1,3 @@
 1) Cookie functionality is not working currently so need to correct that... currently using refresh tokens for login and logout
+2) in citizen dashboard -> change household info
+3) 

@@ -77,7 +77,6 @@ const MonitorDashboard = () => {
                     <p id="monitorName">Welcome, {monitorName}</p>
                 </div>
                 <nav>
-                    <Link to="/monitor/profile" className="menu-item">My Profile</Link>
                     <button onClick={handleLogout} className="menu-item logout-button">Logout</button>
                 </nav>
             </div>
@@ -130,9 +129,9 @@ const MonitorDashboard = () => {
                         </Link>
                     </div>
                     <div className="card">
-                        <Link to="/monitor/land-management">
+                        <Link to="/monitor/land">
                             <h3>Land Records</h3>
-                            <p>Update and verify land records</p>
+                            <p>Verify land records</p>
                         </Link>
                     </div>
                 </div>

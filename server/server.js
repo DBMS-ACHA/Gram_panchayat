@@ -360,11 +360,11 @@ app.get('/citizen/applications', verifyToken, async (req, res) => {
 
     const citizenQuery = 'SELECT citizen_id FROM users WHERE username = $1';
     const citizenResult = await Pool.query(citizenQuery, [username]);
-  
+
     if (citizenResult.rows.length === 0) {
       return res.status(404).json({ message: 'Citizen not found' });
     }
-  
+
     const citizenId = citizenResult.rows[0].citizen_id;
 
     if (!citizenId) {
@@ -415,6 +415,75 @@ app.post('/api/auth/logout', verifyToken, (req, res) => {
     httpOnly: true,
   });
   res.status(200).json({ message: 'Logged out successfully' });
+});
+
+// Get all land records for monitor
+app.get('/monitor/land-records', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is a monitor
+    if (req.user.role !== 'monitor') {
+      return res.status(403).json({ error: 'Access denied. Only monitors can view this resource.' });
+    }
+
+    const query = `
+      SELECT 
+        l.land_id, 
+        l.area_acres, 
+        l.crop_type,
+        c.citizen_id,
+        c.name AS owner_name, 
+        c.household_id
+      FROM land_records l
+      JOIN citizens c ON l.citizen_id = c.citizen_id
+      ORDER BY l.land_id
+    `;
+
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching land records:', err.message);
+    res.status(500).json({ error: 'Failed to fetch land records' });
+  }
+});
+
+// Get individual land record details for monitor
+app.get('/monitor/land-records/:id', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is a monitor
+    if (req.user.role !== 'monitor') {
+      return res.status(403).json({ error: 'Access denied. Only monitors can view this resource.' });
+    }
+    
+    const landId = req.params.id;
+    
+    
+    const query = `
+      SELECT 
+        l.land_id, 
+        l.area_acres, 
+        l.crop_type,
+        l.registration_date,
+        c.citizen_id,
+        c.name AS owner_name, 
+        c.household_id,
+        h.address AS household_address
+      FROM land_records l
+      JOIN citizens c ON l.citizen_id = c.citizen_id
+      LEFT JOIN households h ON c.household_id = h.household_id
+      WHERE l.land_id = $1
+    `;
+    
+    const result = await Pool.query(query, [landId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Land record not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching land record details:', err.message);
+    res.status(500).json({ error: 'Failed to fetch land record details' });
+  }
 });
 
 // Start server
