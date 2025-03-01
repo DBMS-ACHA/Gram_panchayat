@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import '../styles/LandRecords.css';
+import '../../styles/citizens/LandRecords.css';
 
 const LandRecords = () => {
   const [landRecordsData, setLandRecordsData] = useState([]);

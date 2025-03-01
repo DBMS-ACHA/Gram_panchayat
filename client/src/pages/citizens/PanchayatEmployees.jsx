@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import '../styles/PanchayatEmployees.css';
+import '../../styles/citizens/PanchayatEmployees.css';
 
 const PanchayatEmployees = () => {
   const [employeeData, setEmployeeData] = useState([]);

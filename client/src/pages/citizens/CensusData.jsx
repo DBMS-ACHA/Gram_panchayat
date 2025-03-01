@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import '../styles/CensusData.css';
+import '../../styles/citizens/CensusData.css';
 
 const CensusData = () => {
   const [censusData, setCensusData] = useState([]);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Dashboard.css';
+import '../../styles/Dashboard.css';
 import axios from 'axios';
 
 // filepath: /Users/aryansanghi/Desktop/CSE Dep/DBMS/LA4/Gram_Panchayat/client/src/pages/monitorDashboard.jsx
@@ -87,7 +87,7 @@ const MonitorDashboard = () => {
                 </div>
                 <div className="card-container">
                     <div className="card">
-                        <Link to="/monitor/statistics">
+                        <Link to="/monitor/village">
                             <h3>Village Statistics</h3>
                             <p>View and report village statistics</p>
                         </Link>

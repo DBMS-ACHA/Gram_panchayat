@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Dashboard.css'; // You'll need to create this CSS file with the styles from the HTML
+import '../../styles/Dashboard.css'; // You'll need to create this CSS file with the styles from the HTML
 import axios from 'axios';
 
 // This will be your main dashboard component

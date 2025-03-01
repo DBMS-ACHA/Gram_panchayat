@@ -15,6 +15,7 @@ import Applications from './pages/citizens/Applications';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandRecordsMonitor from './pages/monitors/LandRecordsMonitor';
 import MonitorDashboard from './pages/monitors/monitorDashboard';
+import VillageStatisticsMonitor from './pages/monitors/VillageStatisticsMonitor';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/citizen/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />
         <Route path="/monitor/dashboard" element={<ProtectedRoute><MonitorDashboard /></ProtectedRoute>} />
         <Route path="/monitor/land" element={<ProtectedRoute><LandRecordsMonitor /></ProtectedRoute>} />
+        <Route path="/monitor/village" element={<ProtectedRoute><VillageStatisticsMonitor /></ProtectedRoute>} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>

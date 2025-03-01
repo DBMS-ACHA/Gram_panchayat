@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/', householdRouter);
+app.use('/', require('./routes/VillageStats'));
 app.use('/', require('./routes/citizenVaccinations'));
 
 app.get('/citizen/employees', async (req, res) => {
