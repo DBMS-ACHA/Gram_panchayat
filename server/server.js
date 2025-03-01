@@ -473,6 +473,118 @@ app.get('/monitor/asset-tracking', verifyToken, async (req, res) => {
   }
 });
 
+// Get individual citizen profile for monitor
+app.get('/monitor/citizen/:id', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is a monitor
+    if (req.user.role !== 'monitor') {
+      return res.status(403).json({ error: 'Access denied. Only monitors can view this resource.' });
+    }
+    
+    const citizenId = req.params.id;
+    
+    // Validate citizen ID is a number
+    if (!citizenId || isNaN(Number(citizenId))) {
+      return res.status(400).json({ error: 'Invalid citizen ID. Must be a number.' });
+    }
+    
+    const query = `
+      SELECT 
+        c.citizen_id,
+        c.name,
+        c.gender,
+        c.dob,
+        c.income,
+        c.educational_qualification,
+        h.household_id,
+        h.address,
+        (
+          SELECT json_agg(json_build_object(
+            'land_id', lr.land_id,
+            'area_acres', lr.area_acres,
+            'crop_type', lr.crop_type
+          ))
+          FROM land_records lr
+          WHERE lr.citizen_id = c.citizen_id
+        ) AS land_records,
+        (
+          SELECT json_agg(json_build_object(
+            'employee_id', pe.employee_id,
+            'role', pe.role
+          ))
+          FROM panchayat_employees pe
+          WHERE pe.citizen_id = c.citizen_id
+        ) AS employment_details,
+        (
+          SELECT json_agg(json_build_object(
+            'vaccination_id', v.vaccination_id,
+            'vaccine_type', v.vaccine_type,
+            'date_administered', v.date_administered
+          ))
+          FROM vaccinations v
+          WHERE v.citizen_id = c.citizen_id
+        ) AS vaccination_history,
+        (
+          SELECT json_agg(json_build_object(
+            'enrollment_id', se.enrollment_id,
+            'scheme_id', ws.scheme_id,
+            'scheme_name', ws.name,
+            'description', ws.description,
+            'enrollment_date', se.enrollment_date,
+            'status', ws.status,
+            'expiry_date', ws.expiry_date
+          ))
+          FROM scheme_enrollments se
+          JOIN welfare_schemes ws ON se.scheme_id = ws.scheme_id
+          WHERE se.citizen_id = c.citizen_id
+        ) AS enrolled_schemes,
+        (
+          SELECT json_agg(json_build_object(
+            'scheme_id', ws.scheme_id,
+            'scheme_name', ws.name,
+            'description', ws.description
+          ))
+          FROM scheme_applications sa
+          JOIN welfare_schemes ws ON sa.scheme_id = ws.scheme_id
+          WHERE sa.citizen_id = c.citizen_id
+        ) AS scheme_applications,
+        (
+          SELECT json_agg(json_build_object(
+            'event_type', cd.event_type,
+            'event_date', cd.event_date
+          ))
+          FROM census_data cd
+          WHERE cd.citizen_id = c.citizen_id
+        ) AS census_events,
+        (
+          SELECT json_agg(json_build_object(
+            'citizen_id', other.citizen_id,
+            'name', other.name,
+            'gender', other.gender,
+            'dob', other.dob,
+            'educational_qualification', other.educational_qualification
+          ))
+          FROM citizens other
+          WHERE other.household_id = c.household_id AND other.citizen_id != c.citizen_id
+        ) AS family_members
+      FROM citizens c
+      LEFT JOIN households h ON c.household_id = h.household_id
+      WHERE c.citizen_id = $1
+    `;
+    
+    const result = await Pool.query(query, [citizenId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Citizen not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching citizen profile:', err.message);
+    res.status(500).json({ error: 'Failed to fetch citizen profile' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
