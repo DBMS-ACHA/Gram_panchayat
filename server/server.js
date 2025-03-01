@@ -447,43 +447,29 @@ app.get('/monitor/land-records', verifyToken, async (req, res) => {
   }
 });
 
-// Get individual land record details for monitor
-app.get('/monitor/land-records/:id', verifyToken, async (req, res) => {
+// Get all assets for monitor
+app.get('/monitor/asset-tracking', verifyToken, async (req, res) => {
   try {
     // Verify the user is a monitor
     if (req.user.role !== 'monitor') {
       return res.status(403).json({ error: 'Access denied. Only monitors can view this resource.' });
     }
-    
-    const landId = req.params.id;
-    
-    
+
     const query = `
       SELECT 
-        l.land_id, 
-        l.area_acres, 
-        l.crop_type,
-        l.registration_date,
-        c.citizen_id,
-        c.name AS owner_name, 
-        c.household_id,
-        h.address AS household_address
-      FROM land_records l
-      JOIN citizens c ON l.citizen_id = c.citizen_id
-      LEFT JOIN households h ON c.household_id = h.household_id
-      WHERE l.land_id = $1
+        asset_id, 
+        type,
+        location,
+        installation_date
+      FROM assets
+      ORDER BY asset_id
     `;
-    
-    const result = await Pool.query(query, [landId]);
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Land record not found' });
-    }
-    
-    res.json(result.rows[0]);
+
+    const result = await Pool.query(query);
+    res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching land record details:', err.message);
-    res.status(500).json({ error: 'Failed to fetch land record details' });
+    console.error('Error fetching assets:', err.message);
+    res.status(500).json({ error: 'Failed to fetch assets' });
   }
 });
 
