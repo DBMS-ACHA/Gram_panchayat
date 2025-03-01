@@ -1,20 +1,20 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Dashboard from './pages/citizenDashboard';
-import HouseholdInfo from './pages/HouseholdInfo';
-import PanchayatEmployees from './pages/PanchayatEmployees';
-import Vaccinations from './pages/Vaccinations';
-import Assets from './pages/Assets';
-import CensusData from './pages/CensusData';
-import LandRecords from './pages/LandRecords';
-import Profile from './pages/Profile';
+import Login from './pages/citizens/Login';
+import Dashboard from './pages/citizens/citizenDashboard';
+import HouseholdInfo from './pages/citizens/HouseholdInfo';
+import PanchayatEmployees from './pages/citizens/PanchayatEmployees';
+import Vaccinations from './pages/citizens/Vaccinations';
+import Assets from './pages/citizens/Assets';
+import CensusData from './pages/citizens/CensusData';
+import LandRecords from './pages/citizens/LandRecords';
+import Profile from './pages/citizens/Profile';
 import './App.css';
-import Schemes from './pages/Schemes';
-import Applications from './pages/Applications';
+import Schemes from './pages/citizens/Schemes';
+import Applications from './pages/citizens/Applications';
 import ProtectedRoute from './components/ProtectedRoute';
-import LandRecordsMonitor from './pages/LandRecordsMonitor';
-import MonitorDashboard from './pages/monitorDashboard';
+import LandRecordsMonitor from './pages/monitors/LandRecordsMonitor';
+import MonitorDashboard from './pages/monitors/monitorDashboard';
 
 function App() {
   return (
