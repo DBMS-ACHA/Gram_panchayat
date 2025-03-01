@@ -10,7 +10,7 @@ const verifyToken = require('./middleware/verifyJWT');
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://10.145.96.128:3000'],
   credentials: true
 }));
 app.use(express.json());
@@ -930,6 +930,385 @@ app.get('/employee/citizens/search', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Error searching citizens:', err.message);
     res.status(500).json({ error: 'Failed to search citizens' });
+  }
+});
+
+// Add these routes to your server.js file
+
+// Get all census records with household and citizen details
+app.get('/employee/census', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const query = `
+      SELECT 
+        cd.household_id,
+        cd.citizen_id,
+        cd.event_type,
+        cd.event_date,
+        c.name AS citizen_name,
+        h.address AS household_address
+      FROM census_data cd
+      LEFT JOIN citizens c ON cd.citizen_id = c.citizen_id
+      LEFT JOIN households h ON cd.household_id = h.household_id
+      ORDER BY cd.event_date DESC
+    `;
+    
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching census data:', err.message);
+    res.status(500).json({ error: 'Failed to fetch census data' });
+  }
+});
+
+// Get a specific census record
+app.get('/employee/census/:householdId/:citizenId/:eventType/:eventDate', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const { householdId, citizenId, eventType, eventDate } = req.params;
+    
+    const query = `
+      SELECT 
+        cd.household_id,
+        cd.citizen_id,
+        cd.event_type,
+        cd.event_date,
+        c.name AS citizen_name,
+        h.address AS household_address
+      FROM census_data cd
+      LEFT JOIN citizens c ON cd.citizen_id = c.citizen_id
+      LEFT JOIN households h ON cd.household_id = h.household_id
+      WHERE cd.household_id = $1 
+      AND cd.citizen_id = $2
+      AND cd.event_type = $3
+      AND cd.event_date::date = $4::date
+    `;
+    
+    const values = [householdId, citizenId, eventType, eventDate];
+    const result = await Pool.query(query, values);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Census record not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching census record:', err.message);
+    res.status(500).json({ error: 'Failed to fetch census record' });
+  }
+});
+
+// Create a new census record
+app.post('/employee/census', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can create census records.' });
+    }
+
+    const { household_id, citizen_id, event_type, event_date } = req.body;
+    
+    // Validate required fields
+    if (!household_id || !citizen_id || !event_type || !event_date) {
+      return res.status(400).json({ error: 'All fields are required: household_id, citizen_id, event_type, event_date' });
+    }
+    
+    // Validate event type is one of the allowed values
+    const allowedEventTypes = ['birth', 'death', 'marriage', 'migration_in', 'migration_out'];
+    if (!allowedEventTypes.includes(event_type.toLowerCase())) {
+      return res.status(400).json({ 
+        error: `Invalid event type. Must be one of: ${allowedEventTypes.join(', ')}`
+      });
+    }
+    
+    // Validate household exists
+    const householdCheck = await Pool.query('SELECT household_id FROM households WHERE household_id = $1', [household_id]);
+    if (householdCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'Household ID does not exist' });
+    }
+    
+    // Validate citizen exists
+    const citizenCheck = await Pool.query('SELECT citizen_id FROM citizens WHERE citizen_id = $1', [citizen_id]);
+    if (citizenCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'Citizen ID does not exist' });
+    }
+    
+    // Check if record already exists
+    const existingCheck = await Pool.query(`
+      SELECT * FROM census_data 
+      WHERE household_id = $1 
+      AND citizen_id = $2 
+      AND event_type = $3 
+      AND event_date::date = $4::date
+    `, [household_id, citizen_id, event_type, event_date]);
+    
+    if (existingCheck.rows.length > 0) {
+      return res.status(409).json({ 
+        error: 'A census record with these details already exists. Each event can only be recorded once.'
+      });
+    }
+    
+    // Perform special validations based on event type
+    if (event_type.toLowerCase() === 'death') {
+      // Check if person is already marked as deceased
+      const deathCheck = await Pool.query(`
+        SELECT * FROM census_data 
+        WHERE citizen_id = $1 
+        AND event_type = 'death'
+      `, [citizen_id]);
+      
+      if (deathCheck.rows.length > 0) {
+        return res.status(409).json({ error: 'This citizen is already marked as deceased' });
+      }
+    }
+    
+    // Insert the record
+    const query = `
+      INSERT INTO census_data(household_id, citizen_id, event_type, event_date)
+      VALUES($1, $2, $3, $4)
+      RETURNING *
+    `;
+    
+    const values = [household_id, citizen_id, event_type, event_date];
+    const result = await Pool.query(query, values);
+    
+    // Get the complete record with citizen and household info
+    const completeRecord = await Pool.query(`
+      SELECT 
+        cd.household_id,
+        cd.citizen_id,
+        cd.event_type,
+        cd.event_date,
+        c.name AS citizen_name,
+        h.address AS household_address
+      FROM census_data cd
+      LEFT JOIN citizens c ON cd.citizen_id = c.citizen_id
+      LEFT JOIN households h ON cd.household_id = h.household_id
+      WHERE cd.household_id = $1 
+      AND cd.citizen_id = $2 
+      AND cd.event_type = $3 
+      AND cd.event_date::date = $4::date
+    `, [household_id, citizen_id, event_type, event_date]);
+    
+    res.status(201).json(completeRecord.rows[0]);
+  } catch (err) {
+    console.error('Error creating census record:', err.message);
+    res.status(500).json({ error: 'Failed to create census record' });
+  }
+});
+
+// Update a census record
+app.put('/employee/census', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can update census records.' });
+    }
+
+    const { oldEvent, newEvent } = req.body;
+    
+    // Validate both events have all required fields
+    if (!oldEvent || !newEvent) {
+      return res.status(400).json({ error: 'Both old and new event details are required' });
+    }
+    
+    const requiredFields = ['household_id', 'citizen_id', 'event_type', 'event_date'];
+    for (const field of requiredFields) {
+      if (!oldEvent[field] || !newEvent[field]) {
+        return res.status(400).json({ error: `Missing required field: ${field}` });
+      }
+    }
+    
+    // Validate event types
+    const allowedEventTypes = ['birth', 'death', 'marriage', 'migration_in', 'migration_out'];
+    if (!allowedEventTypes.includes(newEvent.event_type.toLowerCase())) {
+      return res.status(400).json({ 
+        error: `Invalid event type. Must be one of: ${allowedEventTypes.join(', ')}`
+      });
+    }
+    
+    // Validate the old record exists
+    const existingCheck = await Pool.query(`
+      SELECT * FROM census_data 
+      WHERE household_id = $1 
+      AND citizen_id = $2 
+      AND event_type = $3 
+      AND event_date::date = $4::date
+    `, [oldEvent.household_id, oldEvent.citizen_id, oldEvent.event_type, oldEvent.event_date]);
+    
+    if (existingCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Original census record not found' });
+    }
+    
+    // Validate household exists
+    const householdCheck = await Pool.query('SELECT household_id FROM households WHERE household_id = $1', [newEvent.household_id]);
+    if (householdCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'New household ID does not exist' });
+    }
+    
+    // Validate citizen exists
+    const citizenCheck = await Pool.query('SELECT citizen_id FROM citizens WHERE citizen_id = $1', [newEvent.citizen_id]);
+    if (citizenCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'New citizen ID does not exist' });
+    }
+    
+    // Check for conflicts with existing records (if updating to a different combination)
+    if (
+      oldEvent.household_id !== newEvent.household_id ||
+      oldEvent.citizen_id !== newEvent.citizen_id ||
+      oldEvent.event_type !== newEvent.event_type ||
+      new Date(oldEvent.event_date).toDateString() !== new Date(newEvent.event_date).toDateString()
+    ) {
+      const conflictCheck = await Pool.query(`
+        SELECT * FROM census_data 
+        WHERE household_id = $1 
+        AND citizen_id = $2 
+        AND event_type = $3 
+        AND event_date::date = $4::date
+      `, [newEvent.household_id, newEvent.citizen_id, newEvent.event_type, newEvent.event_date]);
+      
+      if (conflictCheck.rows.length > 0) {
+        return res.status(409).json({ error: 'A census record with the new details already exists' });
+      }
+    }
+    
+    // Delete the old record and insert the new one (since the PK might change)
+    await Pool.query(`
+      DELETE FROM census_data 
+      WHERE household_id = $1 
+      AND citizen_id = $2 
+      AND event_type = $3 
+      AND event_date::date = $4::date
+    `, [oldEvent.household_id, oldEvent.citizen_id, oldEvent.event_type, oldEvent.event_date]);
+    
+    // Insert the new record
+    await Pool.query(`
+      INSERT INTO census_data(household_id, citizen_id, event_type, event_date)
+      VALUES($1, $2, $3, $4)
+    `, [newEvent.household_id, newEvent.citizen_id, newEvent.event_type, newEvent.event_date]);
+    
+    // Get the complete updated record with citizen and household info
+    const updatedRecord = await Pool.query(`
+      SELECT 
+        cd.household_id,
+        cd.citizen_id,
+        cd.event_type,
+        cd.event_date,
+        c.name AS citizen_name,
+        h.address AS household_address
+      FROM census_data cd
+      LEFT JOIN citizens c ON cd.citizen_id = c.citizen_id
+      LEFT JOIN households h ON cd.household_id = h.household_id
+      WHERE cd.household_id = $1 
+      AND cd.citizen_id = $2 
+      AND cd.event_type = $3 
+      AND cd.event_date::date = $4::date
+    `, [newEvent.household_id, newEvent.citizen_id, newEvent.event_type, newEvent.event_date]);
+    
+    res.json(updatedRecord.rows[0]);
+  } catch (err) {
+    console.error('Error updating census record:', err.message);
+    res.status(500).json({ error: 'Failed to update census record' });
+  }
+});
+
+// Delete a census record
+app.delete('/employee/census', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can delete census records.' });
+    }
+
+    const { household_id, citizen_id, event_type, event_date } = req.body;
+    
+    // Validate all required parameters
+    if (!household_id || !citizen_id || !event_type || !event_date) {
+      return res.status(400).json({ error: 'All fields are required for deletion' });
+    }
+    
+    // Check if the record exists
+    const existingCheck = await Pool.query(`
+      SELECT * FROM census_data 
+      WHERE household_id = $1 
+      AND citizen_id = $2 
+      AND event_type = $3 
+    `, [household_id, citizen_id, event_type]);
+    
+    if (existingCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Census record not found' });
+    }
+    
+    // Delete the record
+    await Pool.query(`
+      DELETE FROM census_data 
+      WHERE household_id = $1 
+      AND citizen_id = $2 
+      AND event_type = $3 
+      AND event_date::date = $4::date
+    `, [household_id, citizen_id, event_type, event_date]);
+    
+    res.json({ message: 'Census record deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting census record:', err.message);
+    res.status(500).json({ error: 'Failed to delete census record' });
+  }
+});
+
+// Get all citizens for dropdown selection
+app.get('/employee/citizens', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const query = `
+      SELECT 
+        c.citizen_id, 
+        c.name,
+        c.household_id
+      FROM citizens c
+      ORDER BY c.name
+    `;
+    
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching citizens:', err.message);
+    res.status(500).json({ error: 'Failed to fetch citizens' });
+  }
+});
+
+// Get all households for dropdown selection
+app.get('/employee/households', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const query = `
+      SELECT 
+        household_id, 
+        address
+      FROM households
+      ORDER BY address
+    `;
+    
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching households:', err.message);
+    res.status(500).json({ error: 'Failed to fetch households' });
   }
 });
 

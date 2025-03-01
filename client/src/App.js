@@ -23,6 +23,7 @@ import VaccinationMonitor from './pages/monitors/VaccinationMonitor';
 import EmployeeDashboard from './pages/employee/employeeDashboard';
 import EmployeeVaccinations from './pages/employee/employeeVaccinations';
 import EmployeeLandRecords from './pages/employee/employeeLandRecords';
+import EmployeeCensus from './pages/employee/employeeCensus';
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
         <Route path="/employee/dashboard" element={<ProtectedRoute><EmployeeDashboard /></ProtectedRoute>} />
         <Route path="/employee/vaccinations" element={<ProtectedRoute><EmployeeVaccinations /></ProtectedRoute>} />
         <Route path="/employee/land-records" element={<ProtectedRoute><EmployeeLandRecords /></ProtectedRoute>} />
+        <Route path="/employee/census" element={<ProtectedRoute><EmployeeCensus /></ProtectedRoute>} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
