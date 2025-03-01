@@ -168,7 +168,7 @@ const CitizenProfileMonitor = () => {
                           <td>
                             <button 
                               className="view-profile-button"
-                              onClick={() => navigate(`/monitor/citizen/${member.citizen_id}`)}
+                              onClick={() => navigate(`/employee/citizens/${member.citizen_id}`)}
                             >
                               View Profile
                             </button>
