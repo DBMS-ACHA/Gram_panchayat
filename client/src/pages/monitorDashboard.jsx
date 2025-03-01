@@ -87,12 +87,6 @@ const MonitorDashboard = () => {
                 </div>
                 <div className="card-container">
                     <div className="card">
-                        <Link to="/monitor/scheme-applications">
-                            <h3>Review Applications</h3>
-                            <p>Review citizen scheme applications</p>
-                        </Link>
-                    </div>
-                    <div className="card">
                         <Link to="/monitor/statistics">
                             <h3>Village Statistics</h3>
                             <p>View and report village statistics</p>
