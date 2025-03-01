@@ -12,7 +12,7 @@ const EmployeeCensus = () => {
     const [sortDirection, setSortDirection] = useState('desc');
     const [filterEventType, setFilterEventType] = useState('');
     const navigate = useNavigate();
-    
+
     // State for modal and form
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add'); // 'add', 'edit', or 'delete'
@@ -22,12 +22,12 @@ const EmployeeCensus = () => {
         event_type: '',
         event_date: ''
     });
-    
+
     const [citizens, setCitizens] = useState([]);
     const [households, setHouseholds] = useState([]);
     const [eventTypes] = useState(['birth', 'death', 'marriage', 'migration_in', 'migration_out']);
     const [selectedCensusEvent, setSelectedCensusEvent] = useState(null);
-    
+
     // Success message
     const [successMessage, setSuccessMessage] = useState('');
 
@@ -37,26 +37,26 @@ const EmployeeCensus = () => {
             try {
                 setLoading(true);
                 const token = localStorage.getItem('token');
-                
+
                 if (!token) {
                     navigate('/');
                     return;
                 }
-                
+
                 const response = await axios.get('http://localhost:3535/employee/census', {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setCensusData(Array.isArray(response.data) ? response.data : []);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching census data:', error);
                 setError('Failed to load census data. Please try again later.');
                 setLoading(false);
-                
+
                 if (error.response && error.response.status === 401) {
                     navigate('/');
                 }
@@ -65,25 +65,25 @@ const EmployeeCensus = () => {
 
         fetchCensusData();
     }, [navigate]);
-    
+
     // Fetch citizens list for dropdown
     useEffect(() => {
         const fetchCitizens = async () => {
             try {
                 const token = localStorage.getItem('token');
-                
+
                 if (!token) {
                     navigate('/');
                     return;
                 }
-                
+
                 const response = await axios.get('http://localhost:3535/employee/citizens', {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setCitizens(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Error fetching citizens:', error);
@@ -95,25 +95,25 @@ const EmployeeCensus = () => {
 
         fetchCitizens();
     }, [navigate]);
-    
+
     // Fetch households list for dropdown
     useEffect(() => {
         const fetchHouseholds = async () => {
             try {
                 const token = localStorage.getItem('token');
-                
+
                 if (!token) {
                     navigate('/');
                     return;
                 }
-                
+
                 const response = await axios.get('http://localhost:3535/employee/households', {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setHouseholds(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Error fetching households:', error);
@@ -148,16 +148,9 @@ const EmployeeCensus = () => {
             year: 'numeric'
         });
     };
-    
-    // Format date for input field (YYYY-MM-DD)
-    const formatDateForInput = (dateString) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
-    };
-    
+
     const getEventTypeClass = (eventType) => {
-        switch(eventType?.toLowerCase()) {
+        switch (eventType?.toLowerCase()) {
             case 'birth':
                 return 'event-birth';
             case 'death':
@@ -217,7 +210,7 @@ const EmployeeCensus = () => {
             [name]: value
         });
     };
-    
+
     // When citizen is selected, auto-fill household if possible
     const handleCitizenChange = (e) => {
         const citizenId = e.target.value;
@@ -225,7 +218,7 @@ const EmployeeCensus = () => {
             ...formData,
             citizen_id: citizenId
         });
-        
+
         // Find citizen's household_id
         const citizen = citizens.find(c => c.citizen_id === Number(citizenId));
         if (citizen && citizen.household_id) {
@@ -237,9 +230,35 @@ const EmployeeCensus = () => {
         }
     };
 
+    // Replace the existing formatDateForInput function with this improved version
+    // Replace the existing formatDateForInput function with this timezone-aware version
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return "";
+
+        try {
+            // Parse the date string
+            const date = new Date(dateString);
+
+            // Check if date is valid
+            if (isNaN(date.getTime())) return "";
+
+            // Get the local date parts to avoid timezone issues
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+            const day = String(date.getDate()).padStart(2, '0');
+
+            // Return in YYYY-MM-DD format
+            return `${year}-${month}-${day}`;
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return "";
+        }
+    };
+
+    // Replace the handleSubmit function with this improved version
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -247,16 +266,23 @@ const EmployeeCensus = () => {
                 return;
             }
 
+            // Ensure date is properly formatted for all requests
+            const formattedFormData = {
+                ...formData,
+                // Ensure date is in ISO format
+                event_date: formatDateForInput(formData.event_date)
+            };
+
             let response;
-            
+
             if (modalMode === 'add') {
-                response = await axios.post('http://localhost:3535/employee/census', formData, {
+                response = await axios.post('http://localhost:3535/employee/census', formattedFormData, {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 // Fetch updated data
                 const updatedResponse = await axios.get('http://localhost:3535/employee/census', {
                     withCredentials: true,
@@ -264,28 +290,29 @@ const EmployeeCensus = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setCensusData(updatedResponse.data);
                 setSuccessMessage('Census event added successfully!');
-            } 
+            }
             else if (modalMode === 'edit') {
+                // Ensure both old and new dates are properly formatted
                 const eventKey = {
                     household_id: selectedCensusEvent.household_id,
                     citizen_id: selectedCensusEvent.citizen_id,
                     event_type: selectedCensusEvent.event_type,
-                    event_date: selectedCensusEvent.event_date
+                    event_date: formatDateForInput(selectedCensusEvent.event_date)
                 };
-                
+
                 response = await axios.put(`http://localhost:3535/employee/census`, {
                     oldEvent: eventKey,
-                    newEvent: formData
+                    newEvent: formattedFormData
                 }, {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 // Fetch updated data
                 const updatedResponse = await axios.get('http://localhost:3535/employee/census', {
                     withCredentials: true,
@@ -293,11 +320,12 @@ const EmployeeCensus = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setCensusData(updatedResponse.data);
                 setSuccessMessage('Census event updated successfully!');
-            } 
+            }
             else if (modalMode === 'delete') {
+                // Make sure date is properly formatted when deleting
                 await axios.delete(`http://localhost:3535/employee/census`, {
                     withCredentials: true,
                     headers: {
@@ -307,22 +335,21 @@ const EmployeeCensus = () => {
                         household_id: selectedCensusEvent.household_id,
                         citizen_id: selectedCensusEvent.citizen_id,
                         event_type: selectedCensusEvent.event_type,
-                        event_date: selectedCensusEvent.event_date
+                        event_date: formatDateForInput(selectedCensusEvent.event_date)
                     }
                 });
-                
+
                 // Remove event from state
-                setCensusData(censusData.filter(event => 
-                    !(event.household_id === selectedCensusEvent.household_id && 
-                      event.citizen_id === selectedCensusEvent.citizen_id &&
-                      event.event_type === selectedCensusEvent.event_type &&
-                      new Date(event.event_date).getTime() === new Date(selectedCensusEvent.event_date).getTime())
+                setCensusData(censusData.filter(event =>
+                    !(event.household_id === selectedCensusEvent.household_id &&
+                        event.citizen_id === selectedCensusEvent.citizen_id &&
+                        event.event_type === selectedCensusEvent.event_type)
                 ));
                 setSuccessMessage('Census event deleted successfully!');
             }
-            
+
             closeModal();
-            
+
             // Clear success message after 3 seconds
             setTimeout(() => {
                 setSuccessMessage('');
@@ -342,25 +369,25 @@ const EmployeeCensus = () => {
             migration_in: 0,
             migration_out: 0
         };
-        
+
         censusData.forEach(item => {
             const eventType = item.event_type?.toLowerCase();
             if (stats.hasOwnProperty(eventType)) {
                 stats[eventType]++;
             }
         });
-        
+
         return stats;
     };
-    
+
     const eventStats = getEventStats();
-    
+
     // Calculate net population change
     const netPopulationChange = eventStats.birth + eventStats.migration_in - eventStats.death - eventStats.migration_out;
 
     const filteredAndSortedCensusData = (Array.isArray(censusData) ? censusData : [])
-        .filter(item => 
-            (filterEventType === '' || item.event_type === filterEventType) && 
+        .filter(item =>
+            (filterEventType === '' || item.event_type === filterEventType) &&
             (
                 (item.citizen_name && item.citizen_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (item.event_type && item.event_type.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -372,13 +399,13 @@ const EmployeeCensus = () => {
         .sort((a, b) => {
             let valA = a[sortField];
             let valB = b[sortField];
-            
+
             // Handle date fields
             if (sortField === 'event_date') {
                 valA = valA ? new Date(valA).getTime() : 0;
                 valB = valB ? new Date(valB).getTime() : 0;
             }
-            
+
             if (valA < valB) {
                 return sortDirection === 'asc' ? -1 : 1;
             }
@@ -395,13 +422,13 @@ const EmployeeCensus = () => {
                     <h1>Census Management</h1>
                     <Link to="/employee/dashboard" className="back-link">Back to Dashboard</Link>
                 </div>
-                
+
                 {successMessage && (
                     <div className="success-message">
                         {successMessage}
                     </div>
                 )}
-                
+
                 <div className="filters-section">
                     <div className="search-bar">
                         <input
@@ -412,10 +439,10 @@ const EmployeeCensus = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    
+
                     <div className="event-type-filter">
-                        <select 
-                            value={filterEventType} 
+                        <select
+                            value={filterEventType}
                             onChange={(e) => setFilterEventType(e.target.value)}
                             className="event-type-select"
                         >
@@ -426,7 +453,7 @@ const EmployeeCensus = () => {
                         </select>
                     </div>
                 </div>
-                
+
                 <div className="add-button-section">
                     <button className="add-button" onClick={openAddModal}>
                         Add New Census Event
@@ -473,7 +500,7 @@ const EmployeeCensus = () => {
                             <div className="stat-label">Net Population Change</div>
                         </div>
                     </div>
-                
+
                     <div className="census-table-container">
                         {filteredAndSortedCensusData.length === 0 ? (
                             <div className="no-data">
@@ -516,14 +543,14 @@ const EmployeeCensus = () => {
                                             <td>{record.citizen_id}</td>
                                             <td>{record.citizen_name || "N/A"}</td>
                                             <td className="action-buttons">
-                                                <button 
-                                                    className="edit-button" 
+                                                <button
+                                                    className="edit-button"
                                                     onClick={() => openEditModal(record)}
                                                 >
                                                     Edit
                                                 </button>
-                                                <button 
-                                                    className="delete-button" 
+                                                <button
+                                                    className="delete-button"
                                                     onClick={() => openDeleteModal(record)}
                                                 >
                                                     Delete
@@ -543,7 +570,7 @@ const EmployeeCensus = () => {
                             </table>
                         )}
                     </div>
-                    
+
                     <div className="census-timeline">
                         <h2>Census Events Timeline</h2>
                         <div className="timeline-container">
@@ -579,20 +606,20 @@ const EmployeeCensus = () => {
                     </div>
                 </div>
             )}
-            
+
             {/* Modal for Add/Edit/Delete */}
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal">
                         <div className="modal-header">
                             <h2>
-                                {modalMode === 'add' ? 'Add New Census Event' : 
-                                 modalMode === 'edit' ? 'Edit Census Event' : 
-                                 'Delete Census Event'}
+                                {modalMode === 'add' ? 'Add New Census Event' :
+                                    modalMode === 'edit' ? 'Edit Census Event' :
+                                        'Delete Census Event'}
                             </h2>
                             <button className="close-button" onClick={closeModal}>×</button>
                         </div>
-                        
+
                         <div className="modal-content">
                             {modalMode === 'delete' ? (
                                 <div className="delete-confirmation">
@@ -601,7 +628,7 @@ const EmployeeCensus = () => {
                                     <p><strong>Date:</strong> {formatDate(selectedCensusEvent?.event_date)}</p>
                                     <p><strong>Citizen:</strong> {selectedCensusEvent?.citizen_name} (ID: {selectedCensusEvent?.citizen_id})</p>
                                     <p><strong>Household:</strong> {selectedCensusEvent?.household_address} (ID: {selectedCensusEvent?.household_id})</p>
-                                    
+
                                     <div className="modal-actions">
                                         <button className="cancel-button" onClick={closeModal}>Cancel</button>
                                         <button className="confirm-delete-button" onClick={handleSubmit}>Delete</button>
@@ -611,9 +638,9 @@ const EmployeeCensus = () => {
                                 <form onSubmit={handleSubmit}>
                                     <div className="form-group">
                                         <label>Event Type:</label>
-                                        <select 
-                                            name="event_type" 
-                                            value={formData.event_type} 
+                                        <select
+                                            name="event_type"
+                                            value={formData.event_type}
                                             onChange={handleInputChange}
                                             required
                                         >
@@ -623,24 +650,24 @@ const EmployeeCensus = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    
+
                                     <div className="form-group">
                                         <label>Event Date:</label>
-                                        <input 
-                                            type="date" 
-                                            name="event_date" 
-                                            value={formData.event_date} 
+                                        <input
+                                            type="date"
+                                            name="event_date"
+                                            value={formData.event_date}
                                             onChange={handleInputChange}
                                             required
                                             max={new Date().toISOString().split('T')[0]}
                                         />
                                     </div>
-                                    
+
                                     <div className="form-group">
                                         <label>Citizen:</label>
-                                        <select 
-                                            name="citizen_id" 
-                                            value={formData.citizen_id} 
+                                        <select
+                                            name="citizen_id"
+                                            value={formData.citizen_id}
                                             onChange={handleCitizenChange}
                                             required
                                         >
@@ -652,12 +679,12 @@ const EmployeeCensus = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    
+
                                     <div className="form-group">
                                         <label>Household:</label>
-                                        <select 
-                                            name="household_id" 
-                                            value={formData.household_id} 
+                                        <select
+                                            name="household_id"
+                                            value={formData.household_id}
                                             onChange={handleInputChange}
                                             required
                                         >
@@ -669,7 +696,7 @@ const EmployeeCensus = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    
+
                                     <div className="modal-actions">
                                         <button className="cancel-button" onClick={closeModal} type="button">Cancel</button>
                                         <button className="submit-button" type="submit">

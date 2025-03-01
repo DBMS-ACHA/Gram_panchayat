@@ -1134,7 +1134,7 @@ app.put('/employee/census', verifyToken, async (req, res) => {
         error: `Invalid event type. Must be one of: ${allowedEventTypes.join(', ')}`
       });
     }
-    
+    console.log('oldEvent', oldEvent);
     // Validate the old record exists
     const existingCheck = await Pool.query(`
       SELECT * FROM census_data 
@@ -1221,6 +1221,7 @@ app.put('/employee/census', verifyToken, async (req, res) => {
 });
 
 // Delete a census record
+
 app.delete('/employee/census', verifyToken, async (req, res) => {
   try {
     // Verify the user is an employee
@@ -1235,26 +1236,31 @@ app.delete('/employee/census', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'All fields are required for deletion' });
     }
     
-    // Check if the record exists
+    // Check if the record exists with the exact event_date
     const existingCheck = await Pool.query(`
       SELECT * FROM census_data 
       WHERE household_id = $1 
       AND citizen_id = $2 
       AND event_type = $3 
-    `, [household_id, citizen_id, event_type]);
+      AND event_date::date = $4::date
+    `, [household_id, citizen_id, event_type, event_date]);
     
     if (existingCheck.rows.length === 0) {
       return res.status(404).json({ error: 'Census record not found' });
     }
     
     // Delete the record
-    await Pool.query(`
+    const result = await Pool.query(`
       DELETE FROM census_data 
       WHERE household_id = $1 
       AND citizen_id = $2 
       AND event_type = $3 
       AND event_date::date = $4::date
     `, [household_id, citizen_id, event_type, event_date]);
+    
+    if (result.rowCount === 0) {
+      return res.status(500).json({ error: 'Failed to delete census record' });
+    }
     
     res.json({ message: 'Census record deleted successfully' });
   } catch (err) {
