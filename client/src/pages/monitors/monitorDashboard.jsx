@@ -99,12 +99,6 @@ const MonitorDashboard = () => {
                         </Link>
                     </div>
                     <div className="card">
-                        <Link to="/monitor/household-data">
-                            <h3>Household Data</h3>
-                            <p>Manage household information</p>
-                        </Link>
-                    </div>
-                    <div className="card">
                         <Link to="/monitor/census-reporting">
                             <h3>Census Reporting</h3>
                             <p>Update and view census data</p>
