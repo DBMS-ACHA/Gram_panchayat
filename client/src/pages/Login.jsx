@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -9,6 +11,7 @@ const Login = () => {
         role: 'citizen'
     });
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -17,6 +20,10 @@ const Login = () => {
             ...formData,
             [id]: value
         });
+    };
+
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
     };
 
     const handleSubmit = async (e) => {
@@ -44,12 +51,10 @@ const Login = () => {
                 throw new Error(data.message || 'Login failed');
             }
 
-            // Store the token in localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('role', role);
             localStorage.setItem('username', username);
 
-            // Redirect based on role
             if (role === 'citizen') {
                 navigate('/citizen/dashboard');
             } else if (role === 'admin') {
@@ -104,13 +109,21 @@ const Login = () => {
                     </div>
                     <div className="form-group">
                         <label htmlFor="password">Password:</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            value={formData.password}
-                            onChange={handleChange}
-                            required 
-                        />
+                        <div className="password-field">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                id="password" 
+                                value={formData.password}
+                                onChange={handleChange}
+                                required 
+                            />
+                            <span className="password-toggle">
+                                <FontAwesomeIcon 
+                                    icon={showPassword ? faEyeSlash : faEye} 
+                                    onClick={toggleShowPassword}
+                                />
+                            </span>
+                        </div>
                     </div>
                     {error && <div className="error-message">{error}</div>}
                     <button type="submit">Login</button>
