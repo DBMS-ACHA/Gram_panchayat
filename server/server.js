@@ -28,6 +28,7 @@ app.use('/', householdRouter);
 app.use('/', require('./routes/VillageStats'));
 app.use('/', require('./routes/citizenVaccinations'));
 app.use('/', require('./routes/monitorVaccinations'));
+app.use('/', require('./routes/employeeLandRecords'));
 
 app.get('/citizen/employees', async (req, res) => {
   const { filter, sort } = req.query;

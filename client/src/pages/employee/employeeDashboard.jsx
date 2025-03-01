@@ -115,12 +115,6 @@ const EmployeeDashboard = () => {
                         </Link>
                     </div>
                     <div className="card">
-                        <Link to="/employee/tax-collection">
-                            <h3>Tax Collection</h3>
-                            <p>Process payments and issue receipts</p>
-                        </Link>
-                    </div>
-                    <div className="card">
                         <Link to="/employee/vaccinations">
                             <h3>Vaccination Records</h3>
                             <p>Schedule and record vaccinations</p>
@@ -130,12 +124,6 @@ const EmployeeDashboard = () => {
                         <Link to="/employee/assets">
                             <h3>Asset Management</h3>
                             <p>Update and maintain panchayat assets</p>
-                        </Link>
-                    </div>
-                    <div className="card">
-                        <Link to="/employee/reports">
-                            <h3>Reports</h3>
-                            <p>Generate and view administrative reports</p>
                         </Link>
                     </div>
                 </div>
