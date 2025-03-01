@@ -585,6 +585,36 @@ app.get('/monitor/citizen/:id', verifyToken, async (req, res) => {
   }
 });
 
+// Get census data for monitor
+app.get('/monitor/census', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is a monitor
+    if (req.user.role !== 'monitor') {
+      return res.status(403).json({ error: 'Access denied. Only monitors can view this resource.' });
+    }
+    
+    const query = `
+      SELECT 
+        cd.household_id,
+        cd.citizen_id,
+        cd.event_type,
+        cd.event_date,
+        c.name AS citizen_name,
+        h.address AS household_address
+      FROM census_data cd
+      LEFT JOIN citizens c ON cd.citizen_id = c.citizen_id
+      LEFT JOIN households h ON cd.household_id = h.household_id
+      ORDER BY cd.event_date DESC
+    `;
+    
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching census data:', err.message);
+    res.status(500).json({ error: 'Failed to fetch census data' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -18,6 +18,7 @@ import MonitorDashboard from './pages/monitors/monitorDashboard';
 import VillageStatisticsMonitor from './pages/monitors/VillageStatisticsMonitor';
 import AssetsMonitor from './pages/monitors/AssetsMonitor';
 import CitizenProfileMonitor from './pages/monitors/citizenProfileMonitor';
+import CensusReporting from './pages/monitors/censusReporting';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
         <Route path="/monitor/village" element={<ProtectedRoute><VillageStatisticsMonitor /></ProtectedRoute>} />
         <Route path="/monitor/asset-tracking" element={<ProtectedRoute><AssetsMonitor /></ProtectedRoute>} />
         <Route path="/monitor/citizen/:id" element={<ProtectedRoute><CitizenProfileMonitor /></ProtectedRoute>} />
+        <Route path="/monitor/census-reporting" element={<ProtectedRoute><CensusReporting /></ProtectedRoute>} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
