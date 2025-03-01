@@ -670,6 +670,268 @@ app.get('/employee/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Add these routes to your server.js file
+
+// Get all vaccination records with citizen names
+app.get('/employee/vaccinations', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const query = `
+      SELECT 
+        v.vaccination_id, 
+        v.citizen_id, 
+        v.vaccine_type, 
+        v.date_administered,
+        c.name
+      FROM vaccinations v
+      LEFT JOIN citizens c ON v.citizen_id = c.citizen_id
+      ORDER BY v.vaccination_id
+    `;
+    
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching vaccinations:', err.message);
+    res.status(500).json({ error: 'Failed to fetch vaccination records' });
+  }
+});
+
+// Get a specific vaccination record
+app.get('/employee/vaccinations/:id', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const vaccinationId = req.params.id;
+    
+    const query = `
+      SELECT 
+        v.vaccination_id, 
+        v.citizen_id, 
+        v.vaccine_type, 
+        v.date_administered,
+        c.name
+      FROM vaccinations v
+      LEFT JOIN citizens c ON v.citizen_id = c.citizen_id
+      WHERE v.vaccination_id = $1
+    `;
+    
+    const result = await Pool.query(query, [vaccinationId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Vaccination record not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching vaccination record:', err.message);
+    res.status(500).json({ error: 'Failed to fetch vaccination record' });
+  }
+});
+
+// Create a new vaccination record
+app.post('/employee/vaccinations', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can create vaccination records.' });
+    }
+
+    const { citizen_id, vaccine_type, date_administered } = req.body;
+    
+    // Validate required fields
+    if (!citizen_id || !vaccine_type || !date_administered) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Validate citizen exists
+    const citizenCheck = await Pool.query('SELECT citizen_id FROM citizens WHERE citizen_id = $1', [citizen_id]);
+    if (citizenCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'Citizen ID does not exist' });
+    }
+    
+    // Generate a new vaccination ID (or use auto-increment if your DB supports it)
+    const maxIdResult = await Pool.query('SELECT MAX(vaccination_id) FROM vaccinations');
+    const newId = (maxIdResult.rows[0].max || 0) + 1;
+    
+    const query = `
+      INSERT INTO vaccinations(vaccination_id, citizen_id, vaccine_type, date_administered)
+      VALUES($1, $2, $3, $4)
+      RETURNING vaccination_id
+    `;
+    
+    const values = [newId, citizen_id, vaccine_type, date_administered];
+    const result = await Pool.query(query, values);
+    
+    // Fetch the complete new record with citizen name
+    const newRecordQuery = `
+      SELECT 
+        v.vaccination_id, 
+        v.citizen_id, 
+        v.vaccine_type, 
+        v.date_administered,
+        c.name
+      FROM vaccinations v
+      LEFT JOIN citizens c ON v.citizen_id = c.citizen_id
+      WHERE v.vaccination_id = $1
+    `;
+    
+    const newRecord = await Pool.query(newRecordQuery, [result.rows[0].vaccination_id]);
+    
+    res.status(201).json(newRecord.rows[0]);
+  } catch (err) {
+    console.error('Error creating vaccination record:', err.message);
+    res.status(500).json({ error: 'Failed to create vaccination record' });
+  }
+});
+
+// Update a vaccination record
+app.put('/employee/vaccinations/:id', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can update vaccination records.' });
+    }
+
+    const vaccinationId = req.params.id;
+    const { citizen_id, vaccine_type, date_administered } = req.body;
+    
+    // Validate required fields
+    if (!citizen_id || !vaccine_type || !date_administered) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Validate citizen exists
+    const citizenCheck = await Pool.query('SELECT citizen_id FROM citizens WHERE citizen_id = $1', [citizen_id]);
+    if (citizenCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'Citizen ID does not exist' });
+    }
+    
+    // Check if vaccination record exists
+    const vaccinationCheck = await Pool.query('SELECT vaccination_id FROM vaccinations WHERE vaccination_id = $1', [vaccinationId]);
+    if (vaccinationCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Vaccination record not found' });
+    }
+    
+    const query = `
+      UPDATE vaccinations
+      SET citizen_id = $1, vaccine_type = $2, date_administered = $3
+      WHERE vaccination_id = $4
+    `;
+    
+    const values = [citizen_id, vaccine_type, date_administered, vaccinationId];
+    await Pool.query(query, values);
+    
+    // Fetch the updated record with citizen name
+    const updatedRecordQuery = `
+      SELECT 
+        v.vaccination_id, 
+        v.citizen_id, 
+        v.vaccine_type, 
+        v.date_administered,
+        c.name
+      FROM vaccinations v
+      LEFT JOIN citizens c ON v.citizen_id = c.citizen_id
+      WHERE v.vaccination_id = $1
+    `;
+    
+    const updatedRecord = await Pool.query(updatedRecordQuery, [vaccinationId]);
+    
+    res.json(updatedRecord.rows[0]);
+  } catch (err) {
+    console.error('Error updating vaccination record:', err.message);
+    res.status(500).json({ error: 'Failed to update vaccination record' });
+  }
+});
+
+// Delete a vaccination record
+app.delete('/employee/vaccinations/:id', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can delete vaccination records.' });
+    }
+
+    const vaccinationId = req.params.id;
+    
+    // Check if vaccination record exists
+    const vaccinationCheck = await Pool.query('SELECT vaccination_id FROM vaccinations WHERE vaccination_id = $1', [vaccinationId]);
+    if (vaccinationCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Vaccination record not found' });
+    }
+    
+    const query = `DELETE FROM vaccinations WHERE vaccination_id = $1`;
+    await Pool.query(query, [vaccinationId]);
+    
+    res.json({ message: 'Vaccination record deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting vaccination record:', err.message);
+    res.status(500).json({ error: 'Failed to delete vaccination record' });
+  }
+});
+
+// Get all citizens (simplified for dropdown)
+app.get('/employee/citizens', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const query = `
+      SELECT citizen_id, name
+      FROM citizens
+      ORDER BY name
+    `;
+    
+    const result = await Pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching citizens:', err.message);
+    res.status(500).json({ error: 'Failed to fetch citizens' });
+  }
+});
+
+// Search citizens by name or ID
+app.get('/employee/citizens/search', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an employee
+    if (req.user.role !== 'employee') {
+      return res.status(403).json({ error: 'Access denied. Only employees can view this resource.' });
+    }
+
+    const searchTerm = req.query.term;
+    
+    if (!searchTerm) {
+      return res.status(400).json({ error: 'Search term is required' });
+    }
+    
+    const query = `
+      SELECT citizen_id, name
+      FROM citizens
+      WHERE 
+        name ILIKE $1 OR 
+        citizen_id::text LIKE $2
+      ORDER BY name
+      LIMIT 10
+    `;
+    
+    const values = [`%${searchTerm}%`, `%${searchTerm}%`];
+    const result = await Pool.query(query, values);
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error searching citizens:', err.message);
+    res.status(500).json({ error: 'Failed to search citizens' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
