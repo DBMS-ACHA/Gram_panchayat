@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/citizens/Login.css';
+import '../styles/Login.css';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -54,8 +54,8 @@ const Login = () => {
                 navigate('/citizen/dashboard');
             } else if (role === 'admin') {
                 navigate('/admin/dashboard');
-            } else if (role === 'panchayat') {
-                navigate('/panchayat/dashboard');
+            } else if (role === 'employee') {
+                navigate('/employee/dashboard');
             } else if (role === 'monitor') {
                 navigate('/monitor/dashboard');
             }
@@ -88,7 +88,7 @@ const Login = () => {
                         >
                             <option value="citizen">Citizen</option>
                             <option value="admin">Admin</option>
-                            <option value="panchayat">Panchayat</option>
+                            <option value="employee">Panchayat Employee</option>
                             <option value="monitor">Government Monitor</option>
                         </select>
                     </div>

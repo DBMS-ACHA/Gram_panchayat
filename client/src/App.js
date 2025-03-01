@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './pages/citizens/Login';
+import Login from './pages/Login';
 import Dashboard from './pages/citizens/citizenDashboard';
 import HouseholdInfo from './pages/citizens/HouseholdInfo';
 import PanchayatEmployees from './pages/citizens/PanchayatEmployees';
@@ -20,6 +20,7 @@ import AssetsMonitor from './pages/monitors/AssetsMonitor';
 import CitizenProfileMonitor from './pages/monitors/citizenProfileMonitor';
 import CensusReporting from './pages/monitors/censusReporting';
 import VaccinationMonitor from './pages/monitors/VaccinationMonitor';
+import EmployeeDashboard from './pages/employee/employeeDashboard';
 
 function App() {
   return (
@@ -43,6 +44,8 @@ function App() {
         <Route path="/monitor/citizen/:id" element={<ProtectedRoute><CitizenProfileMonitor /></ProtectedRoute>} />
         <Route path="/monitor/census-reporting" element={<ProtectedRoute><CensusReporting /></ProtectedRoute>} />
         <Route path="/monitor/vaccination-records" element={<ProtectedRoute><VaccinationMonitor /></ProtectedRoute>} />
+
+        <Route path="/employee/dashboard" element={<ProtectedRoute><EmployeeDashboard /></ProtectedRoute>} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>

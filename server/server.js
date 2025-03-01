@@ -182,7 +182,7 @@ app.get('/citizen/profile', verifyToken, async (req, res) => {
         c.educational_qualification,
         h.household_id,
         h.address,
-        h.income,
+        c.income,
         u.username,
         u.role,
         u.last_login,
@@ -613,6 +613,60 @@ app.get('/monitor/census', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Error fetching census data:', err.message);
     res.status(500).json({ error: 'Failed to fetch census data' });
+  }
+});
+
+app.get('/employee/profile', verifyToken, async (req, res) => {
+  try {
+    const username = req.user.username;
+
+    const employeeData = await Pool.query(
+      `SELECT citizen_id from users WHERE username = $1`,
+      [username]
+    );
+    if (employeeData.rows.length === 0) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    const employeedata = await Pool.query(
+      `SELECT employee_id from panchayat_employees WHERE citizen_id = $1`,
+      [employeeData.rows[0].citizen_id]
+    );
+    if (employeedata.rows.length === 0) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    const employeeId = employeedata.rows[0].employee_id;
+
+    // Comprehensive query joining multiple tables to get all employee information
+    const query = `
+      SELECT 
+        e.employee_id,
+        e.role,
+        c.citizen_id,
+        c.name,
+        c.gender,
+        c.dob,
+        c.educational_qualification,
+        u.username,
+        u.role as user_role,
+        u.last_login
+      FROM panchayat_employees e
+      LEFT JOIN citizens c ON e.citizen_id = c.citizen_id
+      LEFT JOIN users u ON e.citizen_id = u.citizen_id
+      WHERE e.employee_id = $1
+    `;
+
+    const result = await Pool.query(query, [employeeId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching employee profile:', error.message);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
