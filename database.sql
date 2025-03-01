@@ -12,8 +12,7 @@ DROP TABLE IF EXISTS households;
 
 CREATE TABLE households (
     household_id INT PRIMARY KEY,
-    address TEXT NOT NULL,
-    income INT NOT NULL
+    address TEXT NOT NULL
 );
 
 CREATE TABLE citizens (
@@ -23,6 +22,7 @@ CREATE TABLE citizens (
     dob DATE NOT NULL,
     household_id INT,
     educational_qualification TEXT,
+    income INT NOT NULL,
     FOREIGN KEY (household_id) REFERENCES households(household_id)
 );
 
@@ -113,40 +113,40 @@ CREATE TABLE scheme_applications(
 
 -- Dummy Data
 -- Insert households
-INSERT INTO households (household_id, address, income) VALUES
-(1, '123 Main St', 25000),
-(2, '456 Oak Ave', 35000),
-(3, '789 Pine Rd', 42000),
-(4, '101 Maple Ln', 28000),
-(5, '202 Cedar Blvd', 52000),
-(6, '303 Elm St', 31000),
-(7, '404 Birch Ave', 38000),
-(8, '505 Walnut Rd', 44000),
-(9, '606 Cherry Ln', 29000),
-(10, '707 Spruce Way', 48000);
+INSERT INTO households (household_id, address) VALUES
+(1, '123 Main St'),
+(2, '456 Oak Ave'),
+(3, '789 Pine Rd'),
+(4, '101 Maple Ln'),
+(5, '202 Cedar Blvd'),
+(6, '303 Elm St'),
+(7, '404 Birch Ave'),
+(8, '505 Walnut Rd'),
+(9, '606 Cherry Ln'),
+(10, '707 Spruce Way');
 
 -- Insert citizens (20 entries)
-INSERT INTO citizens (citizen_id, name, gender, dob, household_id, educational_qualification) VALUES
-(1, 'Raj Kumar', 'Male', '1980-05-12', 1, 'Bachelor''s Degree'),
-(2, 'Priya Singh', 'Female', '1982-09-23', 1, 'Master''s Degree'),
-(3, 'Amit Patel', 'Male', '2010-02-15', 1, 'Elementary School'),
-(4, 'Sunita Sharma', 'Female', '1975-11-30', 2, 'High School'),
-(5, 'Vikram Gupta', 'Male', '1978-07-22', 2, 'Bachelor''s Degree'),
-(6, 'Meena Verma', 'Female', '2012-04-05', 2, 'Elementary School'),
-(7, 'Rahul Joshi', 'Male', '1990-03-17', 3, 'PhD'),
-(8, 'Anjali Mehta', 'Female', '1992-06-28', 3, 'Master''s Degree'),
-(9, 'Suresh Kumar', 'Male', '1965-12-10', 4, 'High School'),
-(10, 'Lakshmi Devi', 'Female', '1968-01-20', 4, 'Middle School'),
-(11, 'Vinod Yadav', 'Male', '1982-08-14', 5, 'Bachelor''s Degree'),
-(12, 'Kavita Reddy', 'Female', '1984-10-05', 5, 'Master''s Degree'),
-(13, 'Prakash Tiwari', 'Male', '2008-05-30', 5, 'Elementary School'),
-(14, 'Neha Mishra', 'Female', '1995-09-12', 6, 'Bachelor''s Degree'),
-(15, 'Ravi Verma', 'Male', '1993-04-25', 7, 'Master''s Degree'),
-(16, 'Pooja Gandhi', 'Female', '1988-11-15', 8, 'Bachelor''s Degree'),
-(17, 'Deepak Sharma', 'Male', '1970-07-08', 9, 'High School'),
-(18, 'Anita Patel', 'Female', '1972-02-19', 9, 'Middle School'),
-(19, 'Mohan Singh', 'Male', '2015-12-03', 9, 'Pre-school'),
-(20, 'Savita Kumari', 'Female', '1990-10-10', 10, 'Bachelor''s Degree');
+INSERT INTO citizens (citizen_id, name, gender, dob, household_id, educational_qualification, income) VALUES
+(1, 'Raj Kumar', 'Male', '1980-05-12', 1, 'Bachelor''s Degree', 45000),
+(2, 'Priya Singh', 'Female', '1982-09-23', 1, 'Master''s Degree', 60000),
+(3, 'Amit Patel', 'Male', '2010-02-15', 1, 'Elementary School', 0),
+(4, 'Sunita Sharma', 'Female', '1975-11-30', 2, 'High School', 35000),
+(5, 'Vikram Gupta', 'Male', '1978-07-22', 2, 'Bachelor''s Degree', 48000),
+(6, 'Meena Verma', 'Female', '2012-04-05', 2, 'Elementary School', 0),
+(7, 'Rahul Joshi', 'Male', '1990-03-17', 3, 'PhD', 85000),
+(8, 'Anjali Mehta', 'Female', '1992-06-28', 3, 'Master''s Degree', 70000),
+(9, 'Suresh Kumar', 'Male', '1965-12-10', 4, 'High School', 30000),
+(10, 'Lakshmi Devi', 'Female', '1968-01-20', 4, 'Middle School', 25000),
+(11, 'Vinod Yadav', 'Male', '1982-08-14', 5, 'Bachelor''s Degree', 52000),
+(12, 'Kavita Reddy', 'Female', '1984-10-05', 5, 'Master''s Degree', 65000),
+(13, 'Prakash Tiwari', 'Male', '2008-05-30', 5, 'Elementary School', 0),
+(14, 'Neha Mishra', 'Female', '1995-09-12', 6, 'Bachelor''s Degree', 48000),
+(15, 'Ravi Verma', 'Male', '1993-04-25', 7, 'Master''s Degree', 72000),
+(16, 'Pooja Gandhi', 'Female', '1988-11-15', 8, 'Bachelor''s Degree', 55000),
+(17, 'Deepak Sharma', 'Male', '1970-07-08', 9, 'High School', 40000),
+(18, 'Anita Patel', 'Female', '1972-02-19', 9, 'Middle School', 32000),
+(19, 'Mohan Singh', 'Male', '2015-12-03', 9, 'Pre-school', 0),
+(20, 'Savita Kumari', 'Female', '1990-10-10', 10, 'Bachelor''s Degree', 50000);
 
 -- Insert users
 INSERT INTO users (username, password, role, citizen_id) VALUES

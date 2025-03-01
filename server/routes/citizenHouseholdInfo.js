@@ -23,4 +23,28 @@ router.get('/citizen/household-info', async (req, res) => {
     }
 });
 
+// Add an endpoint to fetch household members
+router.get('/citizen/household-members/:householdId', async (req, res) => {
+    const { householdId } = req.params;
+    
+    try {
+        const query = `
+            SELECT 
+                citizen_id, 
+                name, 
+                gender,
+                dob, 
+                EXTRACT(YEAR FROM AGE(CURRENT_DATE, dob)) AS age
+            FROM citizens
+            WHERE household_id = $1
+            ORDER BY name
+        `;
+        const result = await Pool.query(query, [householdId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 module.exports = router;
