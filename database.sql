@@ -73,10 +73,10 @@ CREATE TABLE welfare_schemes (
 
 
 CREATE TABLE scheme_enrollments (
-    enrollment_id INT PRIMARY KEY,
     citizen_id INT,
     scheme_id INT,
     enrollment_date DATE NOT NULL,
+    PRIMARY KEY (citizen_id,scheme_id),
     FOREIGN KEY (citizen_id) REFERENCES citizens(citizen_id),
     FOREIGN KEY (scheme_id) REFERENCES welfare_schemes(scheme_id)
 );
@@ -204,19 +204,19 @@ INSERT INTO welfare_schemes (scheme_id, name, description, status, expiry_date) 
 (7, 'Digital Literacy', 'Computer education for rural youth', FALSE, '2022-12-31');
 
 -- Insert scheme enrollments
-INSERT INTO scheme_enrollments (enrollment_id, citizen_id, scheme_id, enrollment_date) VALUES
-(1, 1, 1, '2022-01-15'),
-(2, 2, 5, '2022-02-20'),
-(3, 4, 1, '2022-01-25'),
-(4, 5, 1, '2022-03-10'),
-(5, 9, 6, '2022-04-05'),
-(6, 10, 6, '2022-04-05'),
-(7, 3, 2, '2022-02-12'),
-(8, 6, 2, '2022-02-15'),
-(9, 13, 2, '2022-02-18'),
-(10, 19, 2, '2022-02-22'),
-(11, 17, 3, '2022-05-01'),
-(12, 18, 3, '2022-05-01');
+INSERT INTO scheme_enrollments (citizen_id, scheme_id, enrollment_date) VALUES
+(1, 1, '2022-01-15'),
+(2, 5, '2022-02-20'),
+(4, 1, '2022-01-25'),
+(5, 1, '2022-03-10'),
+(9, 6, '2022-04-05'),
+(10, 6, '2022-04-05'),
+(3, 2, '2022-02-12'),
+(6, 2, '2022-02-15'),
+(13, 2, '2022-02-18'),
+(19, 2, '2022-02-22'),
+(17, 3, '2022-05-01'),
+(18, 3, '2022-05-01');
 
 -- Insert vaccinations
 INSERT INTO vaccinations (vaccination_id, citizen_id, vaccine_type, date_administered) VALUES

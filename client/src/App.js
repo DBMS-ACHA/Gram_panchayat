@@ -26,6 +26,9 @@ import EmployeeLandRecords from './pages/employee/employeeLandRecords';
 import EmployeeCensus from './pages/employee/employeeCensus';
 import EmployeeCitizen from './pages/employee/employeeCitizens';
 import EmployeeCitizenProfile from './pages/employee/employeeCitizenProfile';
+import EmployeeSchemes from './pages/employee/employeeeSchemes';
+import SchemeDetailsPage from './pages/employee/employeeSchemeDetails';
+import EmployeeAssets from './pages/employee/employeeAssets';
 
 function App() {
   return (
@@ -56,6 +59,9 @@ function App() {
         <Route path="/employee/census" element={<ProtectedRoute><EmployeeCensus /></ProtectedRoute>} />
         <Route path="/employee/village" element={<ProtectedRoute><EmployeeCitizen /></ProtectedRoute>} />
         <Route path="/employee/citizens/:id" element={<ProtectedRoute><EmployeeCitizenProfile /></ProtectedRoute>} />
+        <Route path="/employee/welfare-schemes" element={<ProtectedRoute><EmployeeSchemes /></ProtectedRoute>} />
+        <Route path="/employee/schemes/:schemeId" element={<ProtectedRoute><SchemeDetailsPage /></ProtectedRoute>} />
+        <Route path="/employee/assets" element={<ProtectedRoute><EmployeeAssets /></ProtectedRoute>} />
 
         {/* Add other routes as needed */}
       </Routes>

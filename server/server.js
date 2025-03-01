@@ -215,7 +215,6 @@ app.get('/citizen/profile', verifyToken, async (req, res) => {
         ) AS vaccination_history,
         (
           SELECT json_agg(json_build_object(
-            'enrollment_id', se.enrollment_id,
             'scheme_id', ws.scheme_id,
             'scheme_name', ws.name,
             'description', ws.description,
@@ -528,7 +527,6 @@ app.get('/monitor/citizen/:id', verifyToken, async (req, res) => {
         ) AS vaccination_history,
         (
           SELECT json_agg(json_build_object(
-            'enrollment_id', se.enrollment_id,
             'scheme_id', ws.scheme_id,
             'scheme_name', ws.name,
             'description', ws.description,
@@ -1317,6 +1315,9 @@ app.get('/employee/households', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch households' });
   }
 });
+
+app.use('/', require('./routes/employees/EmloyeeSchemes'));
+app.use('/', require('./routes/employees/EmployeeAssets'));
 
 // Start server
 app.listen(PORT, () => {
