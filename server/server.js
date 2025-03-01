@@ -4,48 +4,18 @@ require('dotenv').config();
 const Pool = require('./config/db');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const householdRouter = require('./routes/citizenHouseholdInfo');
+const verifyToken = require('./middleware/verifyJWT');
 
 const app = express();
-// Middleware
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Replace with your frontend URL
+  origin: 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 
-Pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error('Database connection error:', err.message);
-  } else {
-    console.log('Database connected successfully');
-    console.log('Current database time:', res.rows[0].now);
-  }
-});
-
 app.use(cookieParser());
-
-const verifyToken = (req, res, next) => {
-  // First check authorization header
-  const bearerHeader = req.headers['authorization'];
-
-  // Then check cookies
-  const cookieToken = req.cookies.token;
-
-  // Use either the bearer token or cookie token
-  const token = bearerHeader ? bearerHeader.split(' ')[1] : cookieToken;
-
-  if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
-  }
-
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-};
 
 const PORT = process.env.PORT || 3535;
 
@@ -54,45 +24,8 @@ app.get('/', (req, res) => {
   res.send('Gram Panchayat Management System API');
 });
 
-app.get('/citizen/household-info', async (req, res) => {
-  const { filter, sort } = req.query;
-  let query = 'SELECT * FROM households';
-
-  if (filter) {
-    query += ` WHERE address ILIKE '%${filter}%' OR income::text ILIKE '%${filter}%'`;
-  }
-
-  if (sort) {
-    query += ` ORDER BY ${sort}`;
-  }
-
-  try {
-    const householdData = await Pool.query(query);
-    res.json(householdData.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-// Add the new vaccinations endpoint
-app.get('/citizen/vaccinations', async (req, res) => {
-  try {
-    const vaccinationData = await Pool.query(
-      `SELECT 
-      v.vaccine_type,
-      v.date_administered,
-      c.name as citizen_name,
-      c.gender
-      FROM vaccinations v
-      JOIN citizens c ON v.citizen_id = c.citizen_id`
-    );
-    res.json(vaccinationData.rows);
-  } catch (err) {
-    console.error('Error fetching vaccination records:', err.message);
-    res.status(500).json({ error: 'Failed to fetch vaccination records' });
-  }
-});
+app.use('/', householdRouter);
+app.use('/', require('./routes/citizenVaccinations'));
 
 app.get('/citizen/employees', async (req, res) => {
   const { filter, sort } = req.query;
