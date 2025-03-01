@@ -13,6 +13,7 @@ import './App.css';
 import Schemes from './pages/Schemes';
 import Applications from './pages/Applications';
 import ProtectedRoute from './components/ProtectedRoute';
+import MonitorDashboard from './pages/monitorDashboard';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/citizen/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/citizen/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
         <Route path="/citizen/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />
+        <Route path="/monitor/dashboard" element={<ProtectedRoute><MonitorDashboard /></ProtectedRoute>} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
