@@ -12,7 +12,7 @@ const AdminUsers = () => {
     const [sortField, setSortField] = useState('user_id');
     const [sortDirection, setSortDirection] = useState('asc');
     const navigate = useNavigate();
-    
+
     // State for modal and form
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add'); // 'add', 'edit', or 'delete'
@@ -31,26 +31,26 @@ const AdminUsers = () => {
             try {
                 setLoading(true);
                 const token = localStorage.getItem('token');
-                
+
                 if (!token) {
                     navigate('/login');
                     return;
                 }
-                
+
                 const response = await axios.get('http://localhost:3535/admin/users', {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setUsers(Array.isArray(response.data) ? response.data : []);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching users:', error);
                 setError('Failed to load users data. Please try again later.');
                 setLoading(false);
-                
+
                 if (error.response && error.response.status === 401) {
                     navigate('/login');
                 }
@@ -59,25 +59,25 @@ const AdminUsers = () => {
 
         fetchUsers();
     }, [navigate]);
-    
+
     // Fetch citizens list for dropdown
     useEffect(() => {
         const fetchCitizens = async () => {
             try {
                 const token = localStorage.getItem('token');
-                
+
                 if (!token) {
                     navigate('/login');
                     return;
                 }
-                
+
                 const response = await axios.get('http://localhost:3535/admin/citizens', {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 setCitizens(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Error fetching citizens:', error);
@@ -140,24 +140,35 @@ const AdminUsers = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
+
+        // Clear any previous errors when making changes
+        setError(null);
+
+        setFormData(prevState => ({
+            ...prevState,
             [name]: value
-        });
+        }));
     };
 
+    // Updated form submission logic with conditional citizen_id requirement
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
+            // Validate that citizen_id is provided when role is citizen or employee
+            if ((formData.role === 'citizen' || formData.role === 'employee') && !formData.citizen_id) {
+                setError('Citizen ID is required for citizen and employee accounts');
+                return;
+            }
+
             const token = localStorage.getItem('token');
             if (!token) {
-                navigate('/login');
+                navigate('/');
                 return;
             }
 
             let response;
-            
+
             if (modalMode === 'add') {
                 response = await axios.post(
                     'http://localhost:3535/admin/users',
@@ -181,7 +192,7 @@ const AdminUsers = () => {
                         },
                     }
                 );
-                setUsers(users.map(user => 
+                setUsers(users.map(user =>
                     user.user_id === selectedUser.user_id ? response.data : user
                 ));
             } else if (modalMode === 'delete') {
@@ -196,7 +207,8 @@ const AdminUsers = () => {
                 );
                 setUsers(users.filter(user => user.user_id !== selectedUser.user_id));
             }
-            
+
+            setError(null);
             closeModal();
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -205,7 +217,7 @@ const AdminUsers = () => {
     };
 
     const filteredAndSortedUsers = (Array.isArray(users) ? users : [])
-        .filter(user => 
+        .filter(user =>
             (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (user.role && user.role.toLowerCase().includes(searchTerm.toLowerCase())) ||
             String(user.user_id).includes(searchTerm) ||
@@ -214,13 +226,13 @@ const AdminUsers = () => {
         .sort((a, b) => {
             let valA = a[sortField];
             let valB = b[sortField];
-            
+
             // Handle numeric fields
             if (sortField === 'user_id' || sortField === 'citizen_id') {
                 valA = Number(valA) || 0;
                 valB = Number(valB) || 0;
             }
-            
+
             if (valA < valB) {
                 return sortDirection === 'asc' ? -1 : 1;
             }
@@ -288,7 +300,7 @@ const AdminUsers = () => {
                                     </div>
                                 ))}
                             </div>
-                        
+
                             <table className="users-table">
                                 <thead>
                                     <tr>
@@ -325,14 +337,14 @@ const AdminUsers = () => {
                                                 })}
                                             </td>
                                             <td className="action-buttons">
-                                                <button 
-                                                    className="edit-button" 
+                                                <button
+                                                    className="edit-button"
                                                     onClick={() => openEditModal(user)}
                                                 >
                                                     Edit
                                                 </button>
-                                                <button 
-                                                    className="delete-button" 
+                                                <button
+                                                    className="delete-button"
                                                     onClick={() => openDeleteModal(user)}
                                                 >
                                                     Delete
@@ -346,20 +358,20 @@ const AdminUsers = () => {
                     )}
                 </div>
             )}
-            
+
             {/* Modal for Add/Edit/Delete */}
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal">
                         <div className="modal-header">
                             <h2>
-                                {modalMode === 'add' ? 'Add New User' : 
-                                 modalMode === 'edit' ? 'Edit User' : 
-                                 'Delete User'}
+                                {modalMode === 'add' ? 'Add New User' :
+                                    modalMode === 'edit' ? 'Edit User' :
+                                        'Delete User'}
                             </h2>
                             <button className="close-button" onClick={closeModal}>×</button>
                         </div>
-                        
+
                         <div className="modal-content">
                             {modalMode === 'delete' ? (
                                 <div className="delete-confirmation">
@@ -367,7 +379,7 @@ const AdminUsers = () => {
                                     <p><strong>User ID:</strong> {selectedUser?.user_id}</p>
                                     <p><strong>Username:</strong> {selectedUser?.username}</p>
                                     <p><strong>Role:</strong> {selectedUser?.role}</p>
-                                    
+
                                     <div className="modal-actions">
                                         <button className="cancel-button" onClick={closeModal}>Cancel</button>
                                         <button className="confirm-delete-button" onClick={handleSubmit}>Delete</button>
@@ -378,43 +390,43 @@ const AdminUsers = () => {
                                     {modalMode === 'edit' && (
                                         <div className="form-group">
                                             <label>User ID:</label>
-                                            <input 
-                                                type="text" 
-                                                name="user_id" 
-                                                value={selectedUser?.user_id} 
-                                                disabled 
+                                            <input
+                                                type="text"
+                                                name="user_id"
+                                                value={selectedUser?.user_id}
+                                                disabled
                                             />
                                         </div>
                                     )}
-                                    
+
                                     <div className="form-group">
                                         <label>Username:</label>
-                                        <input 
-                                            type="text" 
-                                            name="username" 
-                                            value={formData.username} 
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            value={formData.username}
                                             onChange={handleInputChange}
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div className="form-group">
                                         <label>Password:</label>
-                                        <input 
-                                            type="password" 
-                                            name="password" 
-                                            value={formData.password} 
+                                        <input
+                                            type="password"
+                                            name="password"
+                                            value={formData.password}
                                             onChange={handleInputChange}
                                             required={modalMode === 'add'}
                                             placeholder={modalMode === 'edit' ? "Leave blank to keep current password" : ""}
                                         />
                                     </div>
-                                    
+
                                     <div className="form-group">
                                         <label>Role:</label>
-                                        <select 
-                                            name="role" 
-                                            value={formData.role} 
+                                        <select
+                                            name="role"
+                                            value={formData.role}
                                             onChange={handleInputChange}
                                             required
                                         >
@@ -424,13 +436,19 @@ const AdminUsers = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    
+
                                     <div className="form-group">
-                                        <label>Citizen (optional):</label>
-                                        <select 
-                                            name="citizen_id" 
-                                            value={formData.citizen_id} 
+                                        <label>
+                                            {formData.role === 'citizen' || formData.role === 'employee'
+                                                ? 'Citizen ID (required):'
+                                                : 'Citizen ID (optional):'}
+                                        </label>
+                                        <select
+                                            name="citizen_id"
+                                            value={formData.citizen_id}
                                             onChange={handleInputChange}
+                                            required={formData.role === 'citizen' || formData.role === 'employee'}
+                                            className={formData.role === 'citizen' || formData.role === 'employee' ? 'required-field' : ''}
                                         >
                                             <option value="">None (System User)</option>
                                             {citizens.map(citizen => (
@@ -439,8 +457,11 @@ const AdminUsers = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {formData.role === 'citizen' || formData.role === 'employee' ? (
+                                            <p className="form-note">A citizen record must be linked to this account</p>
+                                        ) : null}
                                     </div>
-                                    
+
                                     <div className="modal-actions">
                                         <button className="cancel-button" onClick={closeModal} type="button">Cancel</button>
                                         <button className="submit-button" type="submit">

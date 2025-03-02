@@ -503,3 +503,13 @@
         font-size: 8pt;
     }
 }
+
+.required-field {
+    border: 1px solid #e74c3c;
+}
+
+.form-note {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 5px;
+}

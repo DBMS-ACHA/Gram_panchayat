@@ -65,6 +65,12 @@ router.post('/admin/users', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Username already exists' });
         }
 
+        if(role == 'citizen' || role == 'employee'){
+            if(!citizen_id){
+                return res.status(400).json({ error: 'Citizen ID required for citizen/employee role' });
+            }
+        }
+
         // In a real application, you would hash the password here
         // const hashedPassword = await bcrypt.hash(password, 10);
         
