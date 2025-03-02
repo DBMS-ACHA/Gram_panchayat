@@ -130,21 +130,6 @@ const Login = () => {
                 </form>
                 <p><small>New user? Ask admin to create an id</small></p>
             </div>
-
-            <div className="section">
-                <h3>Latest Updates</h3>
-                <p>View recent announcements and updates from the Panchayat</p>
-            </div>
-
-            <div className="section">
-                <h3>Schemes</h3>
-                <p>Information about various government schemes</p>
-            </div>
-
-            <div className="section">
-                <h3>Services</h3>
-                <p>Access various Panchayat services</p>
-            </div>
         </div>
     );
 };

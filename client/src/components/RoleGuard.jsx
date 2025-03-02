@@ -48,8 +48,7 @@ const RoleGuard = ({ requiredRole, children }) => {
 
   if (!hasAccess) {
     // Get user's actual role from localStorage
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userRole = userData.role;
+    const userRole = localStorage.getItem('role');
     
     // Redirect to appropriate dashboard based on user's role
     if (userRole === 'citizen') {
