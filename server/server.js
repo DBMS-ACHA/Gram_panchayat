@@ -1328,6 +1328,58 @@ app.get('/employee/households', verifyToken, async (req, res) => {
   }
 });
 
+// Get admin profile information
+app.get('/admin/profile', verifyToken, async (req, res) => {
+  try {
+    // Verify the user is an admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Only administrators can access this resource.' });
+    }
+
+    const username = req.user.username;
+
+    // Get the admin user details
+    const query = `
+      SELECT 
+        u.username,
+        u.role,
+        u.last_login,
+        u.citizen_id
+      FROM users u
+      WHERE u.username = $1 AND u.role = 'admin'
+    `;
+
+    const result = await Pool.query(query, [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Admin profile not found' });
+    }
+
+    // Get additional information if the admin has a citizen record
+    let adminData = result.rows[0];
+    if (adminData.citizen_id) {
+      const citizenQuery = `
+        SELECT 
+          c.name,
+          c.gender,
+          c.dob
+        FROM citizens c
+        WHERE c.citizen_id = $1
+      `;
+      
+      const citizenResult = await Pool.query(citizenQuery, [adminData.citizen_id]);
+      if (citizenResult.rows.length > 0) {
+        adminData = { ...adminData, ...citizenResult.rows[0] };
+      }
+    }
+
+    res.json(adminData);
+  } catch (error) {
+    console.error('Error fetching admin profile:', error.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.use('/', require('./routes/employees/EmloyeeSchemes'));
 app.use('/', require('./routes/employees/EmployeeAssets'));
 

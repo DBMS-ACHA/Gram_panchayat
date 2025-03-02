@@ -30,6 +30,7 @@ import EmployeeSchemes from './pages/employee/employeeeSchemes';
 import SchemeDetailsPage from './pages/employee/employeeSchemeDetails';
 import EmployeeAssets from './pages/employee/employeeAssets';
 import RoleGuard from './components/RoleGuard';
+import AdminDashboard from './pages/admin/adminDashboard';
 
 function App() {
   return (
@@ -65,6 +66,8 @@ function App() {
         <Route path="/employee/welfare-schemes" element={<RoleGuard requiredRole="employee"><EmployeeSchemes /></RoleGuard>} />
         <Route path="/employee/schemes/:schemeId" element={<RoleGuard requiredRole="employee"><SchemeDetailsPage /></RoleGuard>} />
         <Route path="/employee/assets" element={<RoleGuard requiredRole="employee"><EmployeeAssets /></RoleGuard>} />
+
+        <Route path="/admin/dashboard" element={<RoleGuard requiredRole="admin"><AdminDashboard /></RoleGuard>} />
 
         {/* Add other routes as needed */}
       </Routes>
