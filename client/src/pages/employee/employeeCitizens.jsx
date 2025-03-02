@@ -32,7 +32,6 @@ const VillageStatisticsMonitor = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                
                 setCitizens(response.data);
                 setLoading(false);
             } catch (error) {

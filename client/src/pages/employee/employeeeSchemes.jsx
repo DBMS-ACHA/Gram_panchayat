@@ -504,48 +504,6 @@ const EmployeeSchemes = () => {
                             </table>
                         )}
                     </div>
-                
-                    <div className="schemes-cards">
-                        <h2>Scheme Cards</h2>
-                        <div className="schemes-card-grid">
-                            {filteredAndSortedSchemes.map((scheme) => (
-                                <div key={scheme.scheme_id} className={`scheme-card ${getStatusClass(scheme)}`}>
-                                    <div className="scheme-card-header">
-                                        <h3>{scheme.name}</h3>
-                                        <div className={`scheme-status ${getStatusClass(scheme)}`}>
-                                            {getStatusLabel(scheme)}
-                                        </div>
-                                    </div>
-                                    <div className="scheme-card-body">
-                                        <p className="scheme-description">
-                                            {scheme.description?.length > 120 
-                                                ? `${scheme.description.substring(0, 120)}...` 
-                                                : scheme.description || "No description available"}
-                                        </p>
-                                        {scheme.expiry_date && (
-                                            <p className="scheme-expiry">
-                                                <strong>Expires:</strong> {formatDate(scheme.expiry_date)}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="scheme-card-footer">
-                                        <button 
-                                            className="card-edit-button" 
-                                            onClick={() => openEditModal(scheme)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="card-view-button"
-                                            onClick={() => navigate(`/employee/schemes/${scheme.scheme_id}`)}
-                                        >
-                                            Details
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
                 </div>
             )}
             

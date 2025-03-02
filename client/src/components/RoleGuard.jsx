@@ -47,7 +47,23 @@ const RoleGuard = ({ requiredRole, children }) => {
   }
 
   if (!hasAccess) {
-    return <Navigate to="/" />;
+    // Get user's actual role from localStorage
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userRole = userData.role;
+    
+    // Redirect to appropriate dashboard based on user's role
+    if (userRole === 'citizen') {
+      return <Navigate to="/citizen/dashboard" />;
+    } else if (userRole === 'employee') {
+      return <Navigate to="/employee/dashboard" />;
+    } else if (userRole === 'monitor') {
+      return <Navigate to="/monitor/dashboard" />;
+    } else if (userRole === 'admin') {
+      return <Navigate to="/admin/dashboard" />;
+    } else {
+      // If no valid role or not logged in, redirect to login page
+      return <Navigate to="/" />;
+    }
   }
 
   return children;
