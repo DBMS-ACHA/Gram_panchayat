@@ -84,36 +84,6 @@ const AdminDashboard = () => {
                             <p>Add, remove, or update user accounts</p>
                         </Link>
                     </div>
-                    <div className="card">
-                        <Link to="/admin/employee-management">
-                            <h3>Employee Management</h3>
-                            <p>Manage employee profiles and access privileges</p>
-                        </Link>
-                    </div>
-                    <div className="card">
-                        <Link to="/admin/reports">
-                            <h3>Reports & Statistics</h3>
-                            <p>Generate and view system reports</p>
-                        </Link>
-                    </div>
-                    <div className="card">
-                        <Link to="/admin/system-logs">
-                            <h3>System Logs</h3>
-                            <p>View audit trails and system activities</p>
-                        </Link>
-                    </div>
-                    <div className="card">
-                        <Link to="/admin/configurations">
-                            <h3>System Configuration</h3>
-                            <p>Manage application settings and parameters</p>
-                        </Link>
-                    </div>
-                    <div className="card">
-                        <Link to="/admin/backup">
-                            <h3>Backup & Recovery</h3>
-                            <p>Manage data backup and system recovery</p>
-                        </Link>
-                    </div>
                 </div>
             </div>
         </div>
