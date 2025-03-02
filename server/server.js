@@ -1382,6 +1382,7 @@ app.get('/admin/profile', verifyToken, async (req, res) => {
 
 app.use('/', require('./routes/employees/EmloyeeSchemes'));
 app.use('/', require('./routes/employees/EmployeeAssets'));
+app.use('/', require('./routes/adminUsers'));
 
 // Start server
 app.listen(PORT, () => {

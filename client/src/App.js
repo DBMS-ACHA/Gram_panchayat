@@ -31,6 +31,7 @@ import SchemeDetailsPage from './pages/employee/employeeSchemeDetails';
 import EmployeeAssets from './pages/employee/employeeAssets';
 import RoleGuard from './components/RoleGuard';
 import AdminDashboard from './pages/admin/adminDashboard';
+import AdminUsers from './pages/admin/adminUsers';
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
         <Route path="/employee/assets" element={<RoleGuard requiredRole="employee"><EmployeeAssets /></RoleGuard>} />
 
         <Route path="/admin/dashboard" element={<RoleGuard requiredRole="admin"><AdminDashboard /></RoleGuard>} />
+        <Route path="/admin/user-management" element={<RoleGuard requiredRole="admin"><AdminUsers /></RoleGuard>} />
 
         {/* Add other routes as needed */}
       </Routes>
